@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Form Submit</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, textarea, select { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+        button { background-color: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; margin: 5px; }
+        button.success { background-color: #28a745; }
+        button:hover { opacity: 0.9; }
+    </style>
+</head>
+<body>
+    <h1>Test Article Form</h1>
+    
+    <form action="/admin/articles" method="POST" enctype="multipart/form-data">
+        <input type="hidden" name="_token" value="{{ csrf_token() }}">
+        
+        <div class="form-group">
+            <label for="title">Judul Artikel *</label>
+            <input type="text" id="title" name="title" value="Test Artikel dari Form" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="excerpt">Ringkasan</label>
+            <textarea id="excerpt" name="excerpt" rows="3">Ini adalah ringkasan test artikel</textarea>
+        </div>
+        
+        <div class="form-group">
+            <label for="content">Konten *</label>
+            <textarea id="content" name="content" rows="10" required>
+<p><strong>Ini adalah test content artikel.</strong> Konten ini dibuat untuk testing form submission.</p>
+<h2>Heading Test</h2>
+<p>Paragraf dengan <strong>bold text</strong> dan <em>italic text</em>.</p>
+<ul>
+<li>Poin pertama</li>
+<li>Poin kedua</li>
+<li>Poin ketiga</li>
+</ul>
+            </textarea>
+        </div>
+        
+        <div class="form-group">
+            <label for="category">Kategori</label>
+            <input type="text" id="category" name="category" value="Test Category">
+        </div>
+        
+        <div class="form-group">
+            <label for="tags">Tags</label>
+            <input type="text" id="tags" name="tags" value="test, artikel, form">
+        </div>
+        
+        <div class="form-group">
+            <label for="status">Status</label>
+            <select id="status" name="status">
+                <option value="draft">Draft</option>
+                <option value="published">Published</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <input type="checkbox" id="is_featured" name="is_featured" value="1">
+            <label for="is_featured" style="display: inline; margin-left: 5px;">Featured Article</label>
+        </div>
+        
+        <div class="form-group">
+            <input type="checkbox" id="allow_comments" name="allow_comments" value="1" checked>
+            <label for="allow_comments" style="display: inline; margin-left: 5px;">Allow Comments</label>
+        </div>
+        
+        <div class="form-group">
+            <label for="meta_title">Meta Title</label>
+            <input type="text" id="meta_title" name="meta_title" value="Test Artikel SEO Title">
+        </div>
+        
+        <div class="form-group">
+            <label for="meta_description">Meta Description</label>
+            <textarea id="meta_description" name="meta_description" rows="2">Deskripsi meta untuk SEO test artikel ini</textarea>
+        </div>
+        
+        <div class="form-group">
+            <button type="submit" name="action" value="save" class="success">Simpan sebagai Draft</button>
+            <button type="submit" name="action" value="publish">Publish Artikel</button>
+        </div>
+    </form>
+</body>
+</html>

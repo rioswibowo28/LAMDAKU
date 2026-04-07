@@ -1,0 +1,2259 @@
+@extends('admin.layout-simple')
+
+@section('title', 'Edit Artikel')
+
+@section('content')
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-0 text-gray-800">Edit Artikel</h1>
+                    <p class="text-muted">Edit artikel: {{ $article->title }}</p>
+                </div>
+                <div>
+                    <a href="{{ route('admin.articles.show', $article) }}" class="btn btn-outline-info me-2">
+                        <i class="fas fa-eye me-2"></i>Lihat
+                    </a>
+                    <a href="{{ route('admin.articles.index') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Kembali
+                    </a>
+                </div>
+            </div>
+
+            <form action="{{ route('admin.articles.update', $article) }}" method="POST" enctype="multipart/form-data" id="articleForm">
+                @csrf
+                @method('PUT')
+                
+                <div class="row">
+                    <!-- Main Content -->
+                    <div class="col-lg-8">
+                        <!-- Basic Information -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">
+                                    <i class="fas fa-edit me-2"></i>Informasi Dasar
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label for="title" class="form-label">Judul Artikel <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control @error('title') is-invalid @enderror" 
+                                           id="title" name="title" value="{{ old('title', $article->title) }}" required>
+                                    @error('title')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                    <div class="form-text">
+                                        Current slug: <code>{{ $article->slug }}</code>
+                                        <br>Slug akan diupdate jika judul diubah
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="excerpt" class="form-label">Ringkasan</label>
+                                    <textarea class="form-control @error('excerpt') is-invalid @enderror" 
+                                              id="excerpt" name="excerpt" rows="3" 
+                                              placeholder="Ringkasan singkat artikel (opsional, akan otomatis diambil dari konten jika kosong)">{{ old('excerpt', $article->excerpt) }}</textarea>
+                                    @error('excerpt')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                    <div class="form-text">Maksimal 500 karakter</div>
+                                </div>                                <div class="mb-3">
+                                    <label for="content" class="form-label">Konten Artikel <span class="text-danger">*</span></label>                                    <div class="editor-toolbar mb-2">
+                                        <div class="btn-group-vertical btn-group-sm w-100" role="group">
+                                            <div class="btn-group btn-group-sm mb-2" role="group">
+                                                <button type="button" class="btn btn-outline-primary" onclick="insertTemplate('article-intro')" title="Template pembuka artikel">
+                                                    <i class="fas fa-paragraph"></i> Intro Artikel
+                                                </button>
+                                                <button type="button" class="btn btn-outline-secondary" onclick="insertTemplate('heading-section')" title="Heading dan sub-section">
+                                                    <i class="fas fa-heading"></i> Section
+                                                </button>
+                                                <button type="button" class="btn btn-outline-success" onclick="insertTemplate('bullet-points')" title="Bullet points terstruktur">
+                                                    <i class="fas fa-list"></i> Points
+                                                </button>
+                                                <button type="button" class="btn btn-outline-dark" onclick="insertTemplate('step-by-step')" title="Langkah-langkah berurutan">
+                                                    <i class="fas fa-list-ol"></i> Steps
+                                                </button>
+                                            </div>
+                                            <div class="btn-group btn-group-sm mb-2" role="group">
+                                                <button type="button" class="btn btn-outline-info" onclick="insertTemplate('callout-info')" title="Info box dengan tips">
+                                                    <i class="fas fa-info-circle"></i> Info Box
+                                                </button>
+                                                <button type="button" class="btn btn-outline-warning" onclick="insertTemplate('callout-warning')" title="Warning box">
+                                                    <i class="fas fa-exclamation-triangle"></i> Warning
+                                                </button>
+                                                <button type="button" class="btn btn-outline-primary" onclick="insertTemplate('quote')" title="Quote atau kutipan">
+                                                    <i class="fas fa-quote-right"></i> Quote
+                                                </button>
+                                                <button type="button" class="btn btn-outline-dark" onclick="insertTemplate('code-example')" title="Code example dengan penjelasan">
+                                                    <i class="fas fa-code"></i> Code
+                                                </button>
+                                            </div>
+                                        </div>                                        <small class="text-muted d-block mt-1">
+                                            <i class="fas fa-magic text-primary"></i> 
+                                            Gunakan template di atas untuk format HTML yang profesional. Klik tombol untuk memasukkan template ke editor.
+                                        </small>
+                                        
+                                        <!-- Debug button for testing -->
+                                        <div class="mt-2" style="border-top: 1px dashed #dee2e6; padding-top: 0.5rem;">
+                                            <button type="button" class="btn btn-sm btn-outline-secondary me-2" onclick="testTemplateInsertion()">
+                                                <i class="fas fa-bug"></i> Test Template
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-outline-info" onclick="debugEditorState()">
+                                                <i class="fas fa-info"></i> Debug Info
+                                            </button>
+                                            <small class="text-muted ms-2">Debug tools</small>
+                                        </div>
+                                    </div>
+                                    <textarea class="form-control @error('content') is-invalid @enderror" 
+                                              id="content" name="content" rows="20" required>{{ old('content', $article->content) }}</textarea>
+                                    @error('content')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                    <div class="form-text">Gunakan toolbar di atas untuk menambahkan elemen, atau ketik langsung dengan format Markdown</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Media Management -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">
+                                    <i class="fas fa-images me-2"></i>Media
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label for="featured_image" class="form-label">Gambar Utama</label>
+                                    
+                                    @if($article->featured_image)
+                                        <div class="current-image mb-3">
+                                            <label class="form-label">Gambar Saat Ini:</label>
+                                            <div class="position-relative d-inline-block">
+                                                <img src="{{ asset('storage/' . $article->featured_image) }}" 
+                                                     alt="Current Featured Image" class="img-thumbnail" style="max-width: 200px;">
+                                                <div class="form-check mt-2">
+                                                    <input class="form-check-input" type="checkbox" id="remove_featured_image" 
+                                                           name="remove_featured_image" value="1">
+                                                    <label class="form-check-label text-danger" for="remove_featured_image">
+                                                        <i class="fas fa-trash me-1"></i>Hapus gambar ini
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endif
+                                    
+                                    <input type="file" class="form-control @error('featured_image') is-invalid @enderror" 
+                                           id="featured_image" name="featured_image" accept="image/*">
+                                    @error('featured_image')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                    <div class="form-text">Format: JPG, PNG, GIF. Maksimal 2MB. Biarkan kosong jika tidak ingin mengubah.</div>
+                                    <div id="featuredImagePreview" class="mt-2"></div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="gallery" class="form-label">Galeri Gambar</label>
+                                    
+                                    @if($article->gallery && count($article->gallery) > 0)
+                                        <div class="current-gallery mb-3">
+                                            <label class="form-label">Galeri Saat Ini:</label>
+                                            <div class="row">
+                                                @foreach($article->gallery as $index => $imagePath)
+                                                    <div class="col-6 col-md-4 col-lg-3 mb-3">
+                                                        <div class="position-relative">
+                                                            <img src="{{ asset('storage/' . $imagePath) }}" 
+                                                                 alt="Gallery Image" class="img-thumbnail w-100" 
+                                                                 style="height: 100px; object-fit: cover;">
+                                                            <div class="form-check mt-1">
+                                                                <input class="form-check-input" type="checkbox" 
+                                                                       name="remove_gallery_images[]" value="{{ $imagePath }}"
+                                                                       id="remove_gallery_{{ $index }}">
+                                                                <label class="form-check-label text-danger small" 
+                                                                       for="remove_gallery_{{ $index }}">
+                                                                    <i class="fas fa-trash"></i> Hapus
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    @endif
+                                    
+                                    <input type="file" class="form-control @error('gallery') is-invalid @enderror" 
+                                           id="gallery" name="gallery[]" accept="image/*" multiple>
+                                    @error('gallery')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                    <div class="form-text">Pilih gambar baru untuk ditambahkan ke galeri (opsional)</div>
+                                    <div id="galleryPreview" class="mt-2 row"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SEO Settings -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">
+                                    <i class="fas fa-search me-2"></i>SEO Settings
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label for="meta_title" class="form-label">Meta Title</label>
+                                    <input type="text" class="form-control @error('meta_title') is-invalid @enderror" 
+                                           id="meta_title" name="meta_title" value="{{ old('meta_title', $article->meta_title) }}"
+                                           placeholder="Akan menggunakan judul artikel jika kosong">
+                                    @error('meta_title')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                    <div class="form-text">Maksimal 60 karakter untuk hasil terbaik di Google</div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="meta_description" class="form-label">Meta Description</label>
+                                    <textarea class="form-control @error('meta_description') is-invalid @enderror" 
+                                              id="meta_description" name="meta_description" rows="3"
+                                              placeholder="Deskripsi artikel untuk search engine">{{ old('meta_description', $article->meta_description) }}</textarea>
+                                    @error('meta_description')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                    <div class="form-text">Maksimal 160 karakter untuk hasil terbaik di Google</div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="meta_keywords" class="form-label">Meta Keywords</label>
+                                    <input type="text" class="form-control @error('meta_keywords') is-invalid @enderror" 
+                                           id="meta_keywords" name="meta_keywords" value="{{ old('meta_keywords', $article->meta_keywords) }}"
+                                           placeholder="keyword1, keyword2, keyword3">
+                                    @error('meta_keywords')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                    <div class="form-text">Pisahkan dengan koma</div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="canonical_url" class="form-label">Canonical URL</label>
+                                    <input type="url" class="form-control @error('canonical_url') is-invalid @enderror" 
+                                           id="canonical_url" name="canonical_url" value="{{ old('canonical_url', $article->canonical_url) }}"
+                                           placeholder="https://example.com/artikel-ini">
+                                    @error('canonical_url')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                <!-- Open Graph -->
+                                <hr>
+                                <h6 class="mb-3">Open Graph (Social Media)</h6>
+                                
+                                <div class="mb-3">
+                                    <label for="og_title" class="form-label">OG Title</label>
+                                    <input type="text" class="form-control @error('og_title') is-invalid @enderror" 
+                                           id="og_title" name="og_title" value="{{ old('og_title', $article->og_title) }}"
+                                           placeholder="Akan menggunakan meta title jika kosong">
+                                    @error('og_title')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="og_description" class="form-label">OG Description</label>
+                                    <textarea class="form-control @error('og_description') is-invalid @enderror" 
+                                              id="og_description" name="og_description" rows="2"
+                                              placeholder="Akan menggunakan meta description jika kosong">{{ old('og_description', $article->og_description) }}</textarea>
+                                    @error('og_description')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="og_image" class="form-label">OG Image</label>
+                                    
+                                    @if($article->og_image)
+                                        <div class="current-og-image mb-3">
+                                            <label class="form-label">OG Image Saat Ini:</label>
+                                            <div class="position-relative d-inline-block">
+                                                <img src="{{ asset('storage/' . $article->og_image) }}" 
+                                                     alt="Current OG Image" class="img-thumbnail" style="max-width: 200px;">
+                                                <div class="form-check mt-2">
+                                                    <input class="form-check-input" type="checkbox" id="remove_og_image" 
+                                                           name="remove_og_image" value="1">
+                                                    <label class="form-check-label text-danger" for="remove_og_image">
+                                                        <i class="fas fa-trash me-1"></i>Hapus OG image ini
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endif
+                                    
+                                    <input type="file" class="form-control @error('og_image') is-invalid @enderror" 
+                                           id="og_image" name="og_image" accept="image/*">
+                                    @error('og_image')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                    <div class="form-text">Akan menggunakan gambar utama jika kosong. Ukuran ideal: 1200x630px</div>
+                                    <div id="ogImagePreview" class="mt-2"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sidebar -->
+                    <div class="col-lg-4">
+                        <!-- Article Info -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">
+                                    <i class="fas fa-info-circle me-2"></i>Informasi Artikel
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row text-center">
+                                    <div class="col-4">
+                                        <div class="border-end">
+                                            <h6 class="text-primary mb-1">{{ number_format($article->view_count) }}</h6>
+                                            <small class="text-muted">Views</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="border-end">
+                                            <h6 class="text-info mb-1">{{ $article->reading_time }}</h6>
+                                            <small class="text-muted">Read Time</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <h6 class="text-success mb-1">{{ $article->created_at->format('d M Y') }}</h6>
+                                        <small class="text-muted">Created</small>
+                                    </div>
+                                </div>
+                                
+                                @if($article->published_at)
+                                    <hr>
+                                    <div class="text-center">
+                                        <h6 class="text-success mb-1">{{ $article->published_at->format('d M Y H:i') }}</h6>
+                                        <small class="text-muted">Published</small>
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+
+                        <!-- Publish Settings -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">
+                                    <i class="fas fa-cog me-2"></i>Pengaturan Publikasi
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
+                                    <select class="form-select @error('status') is-invalid @enderror" id="status" name="status" required>
+                                        <option value="draft" {{ old('status', $article->status) === 'draft' ? 'selected' : '' }}>Draft</option>
+                                        <option value="published" {{ old('status', $article->status) === 'published' ? 'selected' : '' }}>Published</option>
+                                        <option value="archived" {{ old('status', $article->status) === 'archived' ? 'selected' : '' }}>Archived</option>
+                                    </select>
+                                    @error('status')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                @if(session('admin_role') === 'admin')
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="is_featured" name="is_featured" value="1" 
+                                               {{ old('is_featured', $article->is_featured) ? 'checked' : '' }}>
+                                        <label class="form-check-label" for="is_featured">
+                                            <i class="fas fa-star text-warning me-1"></i>Featured Article
+                                        </label>
+                                    </div>
+                                    <div class="form-text">Artikel akan ditampilkan di area khusus</div>
+                                </div>
+                                @endif
+
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="allow_comments" name="allow_comments" value="1" 
+                                               {{ old('allow_comments', $article->allow_comments) ? 'checked' : '' }}>
+                                        <label class="form-check-label" for="allow_comments">
+                                            <i class="fas fa-comments me-1"></i>Izinkan Komentar
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Categories & Tags -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">
+                                    <i class="fas fa-tags me-2"></i>Kategori & Tag
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label for="category" class="form-label">Kategori</label>
+                                    <input type="text" class="form-control @error('category') is-invalid @enderror" 
+                                           id="category" name="category" value="{{ old('category', $article->category) }}"
+                                           list="categoryList" placeholder="Masukkan atau pilih kategori">
+                                    <datalist id="categoryList">
+                                        @foreach($categories as $category)
+                                            <option value="{{ $category }}">
+                                        @endforeach
+                                    </datalist>
+                                    @error('category')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="tags" class="form-label">Tags</label>
+                                    <input type="text" class="form-control @error('tags') is-invalid @enderror" 
+                                           id="tags" name="tags" value="{{ old('tags', $article->tags ? implode(', ', $article->tags) : '') }}"
+                                           placeholder="tag1, tag2, tag3">
+                                    @error('tags')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                    <div class="form-text">Pisahkan dengan koma</div>
+                                    
+                                    @if($tags->count() > 0)
+                                        <div class="mt-2">
+                                            <small class="text-muted">Tag yang tersedia:</small><br>
+                                            @foreach($tags as $tag)
+                                                <span class="badge bg-light text-dark me-1 mb-1 tag-suggestion" 
+                                                      style="cursor: pointer;" onclick="addTag('{{ $tag }}')">
+                                                    {{ $tag }}
+                                                </span>
+                                            @endforeach
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-grid gap-2">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save me-2"></i>Update Artikel
+                                    </button>
+                                    @if($article->status !== 'published')
+                                        <button type="submit" class="btn btn-success" name="publish" value="1">
+                                            <i class="fas fa-rocket me-2"></i>Update & Publish
+                                        </button>
+                                    @endif
+                                    <a href="{{ route('admin.articles.show', $article) }}" class="btn btn-outline-info">
+                                        <i class="fas fa-eye me-2"></i>Lihat Artikel
+                                    </a>
+                                    <a href="{{ route('admin.articles.index') }}" class="btn btn-outline-secondary">
+                                        <i class="fas fa-times me-2"></i>Batal
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@push('styles')
+<link rel="stylesheet" href="{{ asset('css/advanced-editor.css') }}">
+<style>
+.editor-toolbar {
+    border: 1px solid #dee2e6;
+    border-bottom: none;
+    border-radius: 0.375rem 0.375rem 0 0;
+    padding: 0.5rem;
+    background-color: #f8f9fa;
+}
+
+.editor-toolbar + .form-control {
+    border-radius: 0 0 0.375rem 0.375rem;
+}
+
+.template-buttons .btn {
+    margin: 2px;
+}
+
+.tox-tinymce {
+    border-radius: 0 0 0.375rem 0.375rem !important;
+}
+
+.content-template {
+    background-color: #f8f9fa;
+    border: 1px dashed #dee2e6;
+    padding: 1rem;
+    margin: 0.5rem 0;
+    border-radius: 0.375rem;
+    font-style: italic;
+    color: #6c757d;
+}
+
+.image-preview {
+    max-width: 200px;
+    max-height: 150px;
+    object-fit: cover;
+    border-radius: 0.375rem;
+    border: 1px solid #dee2e6;
+}
+
+.gallery-preview-item {
+    position: relative;
+    display: inline-block;
+    margin: 0.25rem;
+}
+
+.gallery-preview-item .remove-btn {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #dc3545;
+    color: white;
+    border: none;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.meta-counter {
+    font-size: 0.75rem;
+    color: #6b7280;
+    text-align: right;
+    margin-top: 0.25rem;
+}
+
+.meta-counter.warning {
+    color: #f59e0b;
+}
+
+.meta-counter.danger {
+    color: #ef4444;
+}
+
+/* Auto-save indicator styling */
+.autosave-indicator {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #10b981;
+    color: white;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+    z-index: 1050;
+    font-size: 0.875rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.autosave-indicator.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Draft recovery styling */
+.draft-recovery {
+    background: #fef3c7;
+    border: 1px solid #f59e0b;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+.draft-recovery .actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* Editor toolbar enhancements */
+.editor-toolbar {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.editor-loading {
+    text-align: center;
+    padding: 0.5rem;
+}
+
+.editor-ready {
+    text-align: center;
+    padding: 0.5rem;
+    animation: fadeInOut 3s ease-in-out;
+}
+
+@keyframes fadeInOut {
+    0%, 100% { opacity: 0; }
+     20%, 80% { opacity: 1; }
+}
+
+/* Disabled button state */
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Toolbar button hover effects */
+.editor-toolbar .btn {
+    transition: all 0.2s ease;
+}
+
+.editor-toolbar .btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Article content styling for professional output */
+.callout {
+    padding: 1rem;
+    margin: 1rem 0;
+    border-radius: 0.5rem;
+    border-left: 4px solid;
+    background-color: #f8f9fa;
+}
+
+.callout.info {
+    border-left-color: #0dcaf0;
+    background-color: #d1ecf1;
+    color: #055160;
+}
+
+.callout.warning {
+    border-left-color: #ffc107;
+    background-color: #fff3cd;
+    color: #664d03;
+}
+
+.article-content {
+    line-height: 1.6;
+}
+
+.article-content .intro {
+    font-size: 1.1em;
+    color: #495057;
+    margin-bottom: 1.5rem;
+}
+
+blockquote {
+    border-left: 4px solid #dee2e6;
+    padding-left: 1rem;
+    margin: 1.5rem 0;
+    font-style: italic;
+    color: #6c757d;
+}
+
+blockquote footer {
+    font-size: 0.9em;
+    color: #adb5bd;
+    margin-top: 0.5rem;
+}
+
+pre {
+    background-color: #f8f9fa;
+    padding: 1rem;
+    border-radius: 0.375rem;
+    overflow-x: auto;
+    border: 1px solid #dee2e6;
+}
+
+code {
+    background-color: #f8f9fa;
+    padding: 0.125rem 0.25rem;
+    border-radius: 0.25rem;
+    font-size: 0.875em;
+}
+
+pre code {
+    background-color: transparent;
+    padding: 0;
+}
+</style>
+@endpush
+
+@push('scripts')
+<!-- TinyMCE Editor -->
+<script src="https://cdn.jsdelivr.net/npm/tinymce@6/tinymce.min.js" referrerpolicy="origin"></script>
+<!-- Advanced Editor Configuration -->
+<script src="{{ asset('js/advanced-editor.js') }}"></script>
+<script>
+// Add CSRF token to global scope for API requests
+window.csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+// Initialize advanced editor
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 Initializing Rich Text Editor...');
+    
+    // Don't disable buttons initially - let them work as fallback
+    const toolbar = document.querySelector('.editor-toolbar');
+    if (toolbar) {
+        const loadingIndicator = document.createElement('div');
+        loadingIndicator.className = 'editor-loading';
+        loadingIndicator.innerHTML = '<small class="text-muted"><i class="fas fa-spinner fa-spin"></i> Loading editor...</small>';
+        toolbar.appendChild(loadingIndicator);
+        
+        console.log('✅ Toolbar found and loading indicator added');
+    }        toolbar.appendChild(loadingIndicator);
+        
+        console.log('✅ Toolbar found and loading indicator added');
+    }
+    
+    // Check if advanced editor config is available
+    if (typeof advancedEditorConfig === 'undefined') {
+        console.error('❌ Advanced editor config not found!');
+        console.log('⚠️ Buttons will work in fallback mode');
+        if (toolbar) {
+            const loadingIndicator = toolbar.querySelector('.editor-loading');
+            if (loadingIndicator) loadingIndicator.remove();
+        }
+        // Don't return - let buttons work in fallback mode
+        return;
+    }
+    
+    try {
+        // Initialize TinyMCE with advanced configuration
+        console.log('✅ Advanced editor config found, initializing TinyMCE...');
+        
+        // Add setup callback to enable toolbar when ready
+        const configWithSetup = {
+            ...advancedEditorConfig,
+            setup: function(editor) {
+                console.log('🔧 TinyMCE setup callback triggered');
+                
+                editor.on('init', function() {
+                    console.log('✅ TinyMCE initialized successfully');
+                    
+                    // Remove loading indicator
+                    if (toolbar) {
+                        const loadingIndicator = toolbar.querySelector('.editor-loading');
+                        if (loadingIndicator) {
+                            loadingIndicator.remove();
+                        }
+                        
+                        // Add success indicator
+                        const successIndicator = document.createElement('div');
+                        successIndicator.className = 'editor-ready';
+                        successIndicator.innerHTML = '<small class="text-success"><i class="fas fa-check"></i> Editor ready - TinyMCE mode active!</small>';
+                        toolbar.appendChild(successIndicator);
+                        
+                        setTimeout(() => {
+                            if (successIndicator.parentNode) {
+                                successIndicator.remove();
+                            }
+                        }, 3000);
+                    }
+                    
+                    // Make editor globally accessible
+                    window.tinymceEditor = editor;
+                    console.log('✅ Editor set to window.tinymceEditor');
+                });
+                
+                editor.on('LoadContent', function() {
+                    console.log('✅ TinyMCE content loaded');
+                });
+                
+                editor.on('Change', function() {
+                    console.log('📝 TinyMCE content changed');
+                });
+            }
+        };
+        
+        tinymce.init(configWithSetup).then(function(editors) {
+            console.log('✅ TinyMCE init promise resolved, editors:', editors.length);
+        }).catch(function(error) {
+            console.error('❌ TinyMCE init promise rejected:', error);
+        });
+        
+    } catch (error) {
+        console.error('❌ Error initializing TinyMCE:', error);
+        // Remove loading indicator on error
+        if (toolbar) {
+            const loadingIndicator = toolbar.querySelector('.editor-loading');
+            if (loadingIndicator) loadingIndicator.remove();
+            
+            // Add error indicator
+            const errorIndicator = document.createElement('div');
+            errorIndicator.className = 'editor-error';
+            errorIndicator.innerHTML = '<small class="text-warning"><i class="fas fa-exclamation-triangle"></i> TinyMCE failed - using fallback mode</small>';
+            toolbar.appendChild(errorIndicator);
+        }
+    }
+      // Show draft recovery if available
+    const articleId = window.location.pathname.split('/').slice(-2, -1)[0];
+    const draftContent = localStorage.getItem(`article_draft_${articleId}`);
+    if (draftContent && draftContent.trim() !== '') {
+        showDraftRecovery(draftContent, articleId);
+    }
+});
+
+// Draft recovery functionality
+function showDraftRecovery(draftContent, articleId) {
+    const contentTextarea = document.getElementById('content');
+    const currentContent = contentTextarea.value.trim();
+    
+    if (draftContent !== currentContent) {
+        const recoveryDiv = document.createElement('div');
+        recoveryDiv.className = 'draft-recovery';
+        recoveryDiv.innerHTML = `
+            <div>
+                <strong>📝 Draft Ditemukan:</strong> Ada draft yang tersimpan sebelumnya. Apakah Anda ingin memulihkannya?
+            </div>
+            <div class="actions">
+                <button class="btn btn-primary" onclick="recoverDraft('${draftContent.replace(/'/g, "\\'")}', '${articleId}')">Pulihkan</button>
+                <button class="btn btn-secondary" onclick="dismissDraft('${articleId}')">Abaikan</button>
+            </div>
+        `;
+        
+        contentTextarea.parentNode.insertBefore(recoveryDiv, contentTextarea);
+    }
+}
+
+function recoverDraft(content, articleId) {
+    const editor = tinymce.get('content');
+    if (editor) {
+        editor.setContent(content);
+    } else {
+        document.getElementById('content').value = content;
+    }
+    dismissDraft(articleId);
+    showAutoSaveIndicator('Draft dipulihkan');
+}
+
+function dismissDraft(articleId) {
+    const recoveryDiv = document.querySelector('.draft-recovery');
+    if (recoveryDiv) {
+        recoveryDiv.remove();
+    }
+    localStorage.removeItem(`article_draft_${articleId}`);
+}
+
+// Auto-save indicator
+function showAutoSaveIndicator(message = 'Tersimpan otomatis') {
+    let indicator = document.querySelector('.autosave-indicator');
+    if (!indicator) {
+        indicator = document.createElement('div');
+        indicator.className = 'autosave-indicator';
+        document.body.appendChild(indicator);
+    }
+    
+    indicator.textContent = message;
+    indicator.classList.add('show');
+    
+    setTimeout(() => {
+        indicator.classList.remove('show');
+    }, 2000);
+}
+
+// Original TinyMCE init as fallback (if advanced config fails)
+if (typeof advancedEditorConfig === 'undefined') {
+    console.warn('Advanced editor config not found, using fallback');
+    tinymce.init({
+        selector: '#content',
+        height: 500,
+    menubar: true,
+    plugins: [
+        'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+        'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+        'insertdatetime', 'media', 'table', 'code', 'help', 'wordcount',
+        'emoticons', 'template', 'paste', 'textcolor', 'colorpicker'
+    ],
+    toolbar: 'undo redo | blocks | ' +
+        'bold italic forecolor backcolor | alignleft aligncenter ' +
+        'alignright alignjustify | bullist numlist outdent indent | ' +
+        'removeformat | link image media table | code fullscreen | help',
+    content_style: `
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            font-size: 16px; 
+            line-height: 1.6; 
+            margin: 1rem;
+        }
+        h1, h2, h3, h4, h5, h6 { 
+            font-weight: bold; 
+            margin-top: 1.5rem; 
+            margin-bottom: 0.5rem; 
+        }
+        p { margin-bottom: 1rem; }
+        blockquote { 
+            border-left: 4px solid #007cba; 
+            margin: 1.5rem 0; 
+            padding: 0 1rem; 
+            font-style: italic; 
+        }
+        pre { 
+            background: #f4f4f4; 
+            border: 1px solid #ddd; 
+            border-radius: 4px; 
+            padding: 1rem; 
+            overflow-x: auto; 
+        }
+        code { 
+            background: #f4f4f4; 
+            padding: 2px 4px; 
+            border-radius: 3px; 
+            font-family: 'Courier New', Courier, monospace; 
+        }
+    `,
+    block_formats: 'Paragraph=p; Header 1=h1; Header 2=h2; Header 3=h3; Header 4=h4; Header 5=h5; Header 6=h6; Preformatted=pre',
+    image_advtab: true,
+    image_caption: true,
+    image_title: true,
+    file_picker_types: 'image',
+    automatic_uploads: false,
+    paste_data_images: true,
+    templates: [
+        {
+            title: 'Paragraph dengan Gambar',
+            description: 'Paragraf dengan gambar di samping',
+            content: '<div style="display: flex; align-items: flex-start; gap: 1rem; margin: 1rem 0;"><div style="flex: 1;"><p>Tulis konten Anda di sini...</p></div><div style="flex: 0 0 300px;"><img src="https://via.placeholder.com/300x200" alt="Deskripsi gambar" style="width: 100%; height: auto; border-radius: 8px;"></div></div>'
+        },
+        {
+            title: 'Callout Box',
+            description: 'Kotak informasi penting',
+            content: '<div style="background: #e7f3ff; border: 1px solid #b3d9ff; border-radius: 8px; padding: 1rem; margin: 1rem 0;"><strong>💡 Tip:</strong> Informasi penting atau tips untuk pembaca.</div>'
+        },
+        {
+            title: 'Two Column Layout',
+            description: 'Layout dua kolom',
+            content: '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin: 1rem 0;"><div><h3>Kolom Kiri</h3><p>Konten kolom kiri...</p></div><div><h3>Kolom Kanan</h3><p>Konten kolom kanan...</p></div></div>'
+        }
+    ],
+    setup: function (editor) {
+        editor.on('change', function () {
+            // Auto-save functionality (optional)
+            const content = editor.getContent();
+            localStorage.setItem('article_edit_draft_{{ $article->id }}', content);
+        });
+    }
+});
+
+// Template insertion functions for toolbar buttons
+// Template insertion functions for toolbar buttons dengan format HTML profesional
+function insertTemplate(type) {
+    const editor = tinymce.get('content');
+    if (!editor) {
+        // Fallback for plain textarea
+        insertPlainTemplate(type);
+        return;
+    }
+    
+    let template = '';
+    
+    switch(type) {
+        case 'article-intro':
+            template = `
+                <div class="article-content">
+                    <p class="intro"><strong>Paragraf pembuka dengan emphasis yang menarik perhatian pembaca.</strong> Jelaskan secara singkat apa yang akan dibahas dalam artikel ini dan mengapa hal tersebut penting untuk pembaca.</p>
+                </div>
+            `;
+            break;
+            
+        case 'heading-section':
+            template = `
+                <h2>Judul Bagian Utama</h2>
+                <p>Konten dengan <strong>bold text</strong> dan <em>italic text</em> untuk memberikan penekanan pada poin-poin penting. Pastikan setiap paragraf memiliki gagasan utama yang jelas dan mudah dipahami.</p>
+                
+                <h3>Sub Bagian Penting</h3>
+                <p>Pembahasan lebih detail mengenai topik tertentu. Gunakan sub heading untuk membuat struktur yang jelas dan memudahkan pembaca memahami hierarki informasi.</p>
+            `;
+            break;
+            
+        case 'bullet-points':
+            template = `
+                <ul>
+                    <li><strong>Point 1:</strong> Deskripsi detail mengenai poin pertama yang perlu diperhatikan</li>
+                    <li><strong>Point 2:</strong> Penjelasan komprehensif tentang aspek kedua dari topik</li>
+                    <li><strong>Point 3:</strong> Informasi tambahan yang mendukung pemahaman pembaca</li>
+                </ul>
+            `;
+            break;
+            
+        case 'callout-info':
+            template = '<div class="callout info"><strong>💡 Tips Penting:</strong> Gunakan callout box seperti ini untuk memberikan informasi tambahan atau tips yang berguna bagi pembaca.</div>';
+            break;
+            
+        case 'callout-warning':
+            template = '<div class="callout warning"><strong>⚠️ Perhatian:</strong> Bagian ini berisi informasi penting yang perlu diperhatikan sebelum melanjutkan.</div>';
+            break;
+            
+        case 'code-example':
+            template = `
+                <pre><code>// Contoh implementasi kode
+function exampleFunction() {
+    const result = "Ini adalah contoh kode yang dapat disesuaikan";
+    return result;
+}</code></pre>
+                <p><em>Penjelasan mengenai kode di atas dan bagaimana cara menggunakannya dalam konteks artikel.</em></p>
+            `;
+            break;
+            
+        case 'paragraph':
+            template = '<p>Tulis paragraf Anda di sini dengan format yang sesuai untuk artikel profesional...</p>';
+            break;
+            
+        case 'heading':
+            template = '<h2>Judul Bagian</h2><p>Konten di bawah judul dengan penjelasan yang detail dan mudah dipahami...</p>';
+            break;
+            
+        case 'list':
+            template = `
+                <ol>
+                    <li><strong>Langkah Pertama:</strong> Penjelasan detail mengenai langkah awal yang harus dilakukan</li>
+                    <li><strong>Langkah Kedua:</strong> Instruksi lanjutan dengan penjelasan yang mudah diikuti</li>
+                    <li><strong>Langkah Ketiga:</strong> Finalisasi proses dengan tips untuk hasil optimal</li>
+                </ol>
+            `;
+            break;
+            
+        case 'quote':
+            template = `
+                <blockquote>
+                    <p>"Quote atau kutipan menarik yang mendukung pembahasan dalam artikel ini dan memberikan perspektif yang berbeda."</p>
+                    <footer>— Sumber Kutipan atau Expert</footer>
+                </blockquote>
+            `;
+            break;
+            
+        case 'code':
+            template = '<pre><code>// Contoh kode yang relevan dengan artikel\nfunction hello() {\n    console.log("Hello World!");\n}</code></pre>';
+            break;
+    }
+    
+    editor.insertContent(template);
+    editor.focus();
+    showAutoSaveIndicator('Template ditambahkan');
+}
+
+// Fallback for plain textarea dengan format HTML
+function insertPlainTemplate(type) {
+    const textarea = document.getElementById('content');
+    let template = '';
+    
+    switch(type) {
+        case 'article-intro':
+            template = '\n\n<div class="article-content">\n    <p class="intro"><strong>Paragraf pembuka dengan emphasis yang menarik perhatian pembaca.</strong> Jelaskan secara singkat apa yang akan dibahas dalam artikel ini.</p>\n</div>\n\n';
+            break;
+            
+        case 'heading-section':
+            template = '\n\n<h2>Judul Bagian Utama</h2>\n<p>Konten dengan <strong>bold text</strong> dan <em>italic text</em> untuk memberikan penekanan pada poin-poin penting.</p>\n\n';
+            break;
+            
+        case 'bullet-points':
+            template = '\n\n<ul>\n    <li><strong>Point 1:</strong> Deskripsi detail mengenai poin pertama</li>\n    <li><strong>Point 2:</strong> Penjelasan komprehensif tentang aspek kedua</li>\n    <li><strong>Point 3:</strong> Informasi tambahan yang mendukung pemahaman</li>\n</ul>\n\n';
+            break;
+            
+        case 'callout-info':
+            template = '\n\n<div class="callout info"><strong>💡 Tips Penting:</strong> Gunakan callout box seperti ini untuk memberikan informasi tambahan.</div>\n\n';
+            break;
+            
+        case 'callout-warning':
+            template = '\n\n<div class="callout warning"><strong>⚠️ Perhatian:</strong> Bagian ini berisi informasi penting yang perlu diperhatikan.</div>\n\n';
+            break;
+            
+        case 'code-example':
+            template = '\n\n<pre><code>// Contoh implementasi kode\nfunction exampleFunction() {\n    const result = "Ini adalah contoh kode";\n    return result;\n}</code></pre>\n<p><em>Penjelasan mengenai kode di atas dan cara penggunaannya.</em></p>\n\n';
+            break;
+            
+        case 'paragraph':
+            template = '\n\n<p>Tulis paragraf Anda di sini dengan format yang sesuai untuk artikel profesional...</p>\n\n';
+            break;
+            
+        case 'heading':
+            template = '\n\n<h2>Judul Bagian</h2>\n<p>Konten di bawah judul dengan penjelasan yang detail...</p>\n\n';
+            break;
+            
+        case 'list':
+            template = '\n\n<ol>\n    <li><strong>Langkah Pertama:</strong> Penjelasan detail langkah awal</li>\n    <li><strong>Langkah Kedua:</strong> Instruksi lanjutan yang mudah diikuti</li>\n    <li><strong>Langkah Ketiga:</strong> Finalisasi dengan tips optimal</li>\n</ol>\n\n';
+            break;
+            
+        case 'quote':
+            template = '\n\n<blockquote>\n    <p>"Quote atau kutipan menarik yang mendukung pembahasan artikel."</p>\n    <footer>— Sumber Kutipan</footer>\n</blockquote>\n\n';
+            break;
+            
+        case 'code':
+            template = '\n\n<pre><code>// Contoh kode\nfunction hello() {\n    console.log("Hello World!");\n}</code></pre>\n\n';
+            break;
+    }
+    
+    const cursorPos = textarea.selectionStart;
+    const textBefore = textarea.value.substring(0, cursorPos);
+    const textAfter = textarea.value.substring(cursorPos);
+    
+    textarea.value = textBefore + template + textAfter;
+    textarea.focus();
+    textarea.setSelectionRange(cursorPos + template.length, cursorPos + template.length);
+}
+
+// Image preview functionality
+document.getElementById('featured_image')?.addEventListener('change', function(e) {
+    previewImage(e.target, 'featuredImagePreview');
+});
+
+document.getElementById('gallery')?.addEventListener('change', function(e) {
+    previewMultipleImages(e.target, 'galleryPreview');
+});
+
+document.getElementById('og_image')?.addEventListener('change', function(e) {
+    previewImage(e.target, 'ogImagePreview');
+});
+
+function previewImage(input, previewId) {
+    const preview = document.getElementById(previewId);
+    preview.innerHTML = '';
+    
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            img.className = 'img-thumbnail';
+            img.style.maxWidth = '200px';
+            img.style.maxHeight = '150px';
+            preview.appendChild(img);
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+function previewMultipleImages(input, previewId) {
+    const preview = document.getElementById(previewId);
+    preview.innerHTML = '';
+    
+    if (input.files) {
+        Array.from(input.files).forEach(file => {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const col = document.createElement('div');
+                col.className = 'col-6 col-md-4 mb-2';
+                
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.className = 'img-thumbnail w-100';
+                img.style.height = '100px';
+                img.style.objectFit = 'cover';
+                
+                col.appendChild(img);
+                preview.appendChild(col);
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+}
+
+// Tag functionality
+function addTag(tag) {
+    const tagsInput = document.getElementById('tags');
+    const currentTags = tagsInput.value ? tagsInput.value.split(',').map(t => t.trim()) : [];
+    
+    if (!currentTags.includes(tag)) {
+        currentTags.push(tag);
+        tagsInput.value = currentTags.join(', ');
+    }
+}
+
+// Character counter for meta fields
+function addCharacterCounter(inputId, maxLength) {
+    const input = document.getElementById(inputId);
+    if (!input) return; // Skip if element doesn't exist
+    
+    const counter = document.createElement('div');
+    counter.className = 'form-text text-end';
+    counter.style.fontSize = '12px';
+    
+    function updateCounter() {
+        const length = input.value.length;
+        counter.textContent = `${length}/${maxLength}`;
+        counter.className = `form-text text-end ${length > maxLength ? 'text-danger' : 'text-muted'}`;
+    }
+    
+    input.addEventListener('input', updateCounter);
+    input.parentNode.appendChild(counter);
+    updateCounter();
+}
+
+// Add character counters
+addCharacterCounter('meta_title', 60);
+addCharacterCounter('meta_description', 160);
+addCharacterCounter('excerpt', 500);
+
+// Form validation
+document.getElementById('articleForm').addEventListener('submit', function(e) {
+    const title = document.getElementById('title').value.trim();
+    
+    // Get content from TinyMCE or fallback to textarea
+    let content = '';
+    if (tinymce.get('content')) {
+        content = tinymce.get('content').getContent().trim();
+    } else {
+        content = document.getElementById('content').value.trim();
+    }
+    
+    if (!title) {
+        e.preventDefault();
+        alert('Judul artikel harus diisi');
+        document.getElementById('title').focus();
+        return;
+    }
+    
+    if (!content) {
+        e.preventDefault();
+        alert('Konten artikel harus diisi');
+        if (tinymce.get('content')) {
+            tinymce.get('content').focus();
+        } else {
+            document.getElementById('content').focus();
+        }
+        return;
+    }
+      // Update textarea content from TinyMCE before submission
+    if (tinymce.get('content')) {
+        document.getElementById('content').value = tinymce.get('content').getContent();
+    }
+});
+
+// Fallback basic TinyMCE initialization
+function initBasicTinyMCE() {
+    console.log('🔄 Initializing basic TinyMCE as fallback...');
+    tinymce.init({
+        selector: '#content',
+        height: 500,
+        menubar: true,
+        plugins: 'advlist autolink lists link image charmap print preview anchor searchreplace visualblocks code fullscreen insertdatetime media table paste code help wordcount',
+        toolbar: 'undo redo | formatselect | bold italic backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help',
+        setup: function (editor) {
+            editor.on('init', function () {
+                console.log('✅ Basic TinyMCE initialized');
+            });
+        }
+    });
+}
+
+// Auto-save indicator
+function showAutoSaveIndicator(message = 'Tersimpan otomatis') {
+    let indicator = document.querySelector('.autosave-indicator');
+    if (!indicator) {
+        indicator = document.createElement('div');
+        indicator.className = 'autosave-indicator';
+        document.body.appendChild(indicator);
+    }
+    
+    indicator.textContent = message;
+    indicator.classList.add('show');
+    
+    setTimeout(() => {
+        indicator.classList.remove('show');
+    }, 2000);
+}
+
+// Enhanced Template insertion functions untuk toolbar buttons dengan format HTML profesional
+function insertTemplate(type) {
+    console.log('🎯 insertTemplate called with type:', type);
+    
+    // Try multiple ways to get TinyMCE editor
+    let editor = null;
+    let editorMethod = 'fallback';
+    
+    // Method 1: Direct access
+    if (typeof tinymce !== 'undefined') {
+        editor = tinymce.get('content');
+        if (editor) {
+            editorMethod = 'tinymce.get';
+            console.log('✅ Editor found via tinymce.get()');
+        }
+    }
+    
+    // Method 2: Global editor reference
+    if (!editor && window.tinymceEditor) {
+        editor = window.tinymceEditor;
+        editorMethod = 'global';
+        console.log('✅ Editor found via window.tinymceEditor');
+    }
+    
+    // Method 3: Try to find by selector
+    if (!editor && typeof tinymce !== 'undefined' && tinymce.editors) {
+        editor = tinymce.editors.find(e => e.targetElm && e.targetElm.id === 'content');
+        if (editor) {
+            editorMethod = 'editors.find';
+            console.log('✅ Editor found via tinymce.editors.find()');
+        }
+    }
+    
+    // Check if editor is properly initialized
+    if (editor) {
+        console.log('🔍 Editor state check:', {
+            initialized: editor.initialized,
+            destroyed: editor.destroyed,
+            removed: editor.removed,
+            targetElm: editor.targetElm ? editor.targetElm.id : 'none'
+        });
+        
+        if (editor.initialized !== false && !editor.destroyed && !editor.removed) {
+            console.log(`✅ Using TinyMCE editor (${editorMethod})`);
+            insertTinyMCETemplate(editor, type);
+            return;
+        } else {
+            console.log('⚠️ TinyMCE editor not ready, using fallback');
+        }
+    } else {
+        console.log('⚠️ No TinyMCE editor found, using fallback');
+    }
+    
+    // Fallback to plain textarea
+    console.log('📝 Using fallback textarea insertion');
+    insertPlainTemplate(type);
+}
+
+// Insert template into TinyMCE editor
+function insertTinyMCETemplate(editor, type) {
+    let template = '';
+    
+    switch(type) {
+        case 'article-intro':
+            template = `
+                <div class="article-content">
+                    <p class="intro"><strong>Paragraf pembuka dengan emphasis yang menarik perhatian pembaca.</strong> Jelaskan secara singkat apa yang akan dibahas dalam artikel ini dan mengapa hal tersebut penting untuk pembaca.</p>
+                </div>
+            `;
+            break;
+            
+        case 'heading-section':
+            template = `
+                <h2>Judul Bagian Utama</h2>
+                <p>Konten dengan <strong>bold text</strong> dan <em>italic text</em> untuk memberikan penekanan pada poin-poin penting. Pastikan setiap paragraf memiliki gagasan utama yang jelas dan mudah dipahami.</p>
+                
+                <h3>Sub Bagian Penting</h3>
+                <p>Pembahasan lebih detail mengenai topik tertentu. Gunakan sub heading untuk membuat struktur yang jelas dan memudahkan pembaca memahami hierarki informasi.</p>
+            `;
+            break;
+            
+        case 'bullet-points':
+            template = `
+                <ul>
+                    <li><strong>Point 1:</strong> Deskripsi detail mengenai poin pertama yang perlu diperhatikan</li>
+                    <li><strong>Point 2:</strong> Penjelasan komprehensif tentang aspek kedua dari topik</li>
+                    <li><strong>Point 3:</strong> Informasi tambahan yang mendukung pemahaman pembaca</li>
+                </ul>
+            `;
+            break;
+            
+        case 'callout-info':
+            template = '<div class="callout info"><strong>💡 Tips Penting:</strong> Gunakan callout box seperti ini untuk memberikan informasi tambahan atau tips yang berguna bagi pembaca.</div>';
+            break;
+            
+        case 'callout-warning':
+            template = '<div class="callout warning"><strong>⚠️ Perhatian:</strong> Bagian ini berisi informasi penting yang perlu diperhatikan sebelum melanjutkan.</div>';
+            break;
+            
+        case 'code-example':
+            template = `
+                <pre><code>// Contoh implementasi kode
+function exampleFunction() {
+    const result = "Ini adalah contoh kode yang dapat disesuaikan";
+    return result;
+}</code></pre>
+                <p><em>Penjelasan mengenai kode di atas dan bagaimana cara menggunakannya dalam konteks artikel.</em></p>
+            `;
+            break;
+            
+        case 'step-by-step':
+            template = `
+                <h2>Langkah-langkah</h2>
+                <ol>
+                    <li><strong>Langkah Pertama:</strong> Penjelasan detail mengenai langkah awal yang harus dilakukan</li>
+                    <li><strong>Langkah Kedua:</strong> Instruksi lanjutan dengan penjelasan yang mudah diikuti</li>
+                    <li><strong>Langkah Ketiga:</strong> Finalisasi proses dengan tips untuk hasil optimal</li>
+                </ol>
+            `;
+            break;
+            
+        case 'quote':
+            template = `
+                <blockquote>
+                    <p>"Quote atau kutipan menarik yang mendukung pembahasan dalam artikel ini dan memberikan perspektif yang berbeda."</p>
+                    <footer>— Sumber Kutipan atau Expert</footer>
+                </blockquote>
+            `;
+            break;
+            
+        default:
+            template = '<p>Template tidak ditemukan. Silakan pilih template yang tersedia.</p>';
+    }
+    
+    if (template) {
+        try {
+            // Insert content at cursor position
+            editor.insertContent(template);
+            
+            // Focus back to editor
+            editor.focus();
+            
+            // Show success indicator
+            showAutoSaveIndicator('Template ditambahkan');
+            console.log('✅ Template inserted successfully');
+            
+            // Trigger change event to enable auto-save
+            if (editor.fire) {
+                editor.fire('change');
+            }
+            
+        } catch (error) {
+            console.error('❌ Error inserting template:', error);
+            // Fallback to plain text insertion
+            insertPlainTemplate(type);
+        }
+    }
+}
+
+// Fallback for plain textarea dengan format HTML - Enhanced dengan debugging
+function insertPlainTemplate(type) {
+    console.log('📝 insertPlainTemplate called with type:', type);
+    
+    const textarea = document.getElementById('content');
+    if (!textarea) {
+        console.error('❌ Content textarea not found!');
+        alert('Error: Content textarea not found!');
+        return;
+    }
+    
+    console.log('✅ Content textarea found');
+    
+    let template = '';
+    
+    switch(type) {
+        case 'article-intro':
+            template = '\n\n<div class="article-content">\n    <p class="intro"><strong>Paragraf pembuka dengan emphasis yang menarik perhatian pembaca.</strong> Jelaskan secara singkat apa yang akan dibahas dalam artikel ini dan mengapa hal tersebut penting untuk pembaca.</p>\n</div>\n\n';
+            break;
+            
+        case 'heading-section':
+            template = '\n\n<h2>Judul Bagian Utama</h2>\n<p>Konten dengan <strong>bold text</strong> dan <em>italic text</em> untuk memberikan penekanan pada poin-poin penting. Pastikan setiap paragraf memiliki gagasan utama yang jelas dan mudah dipahami.</p>\n\n<h3>Sub Bagian Penting</h3>\n<p>Pembahasan lebih detail mengenai topik tertentu. Gunakan sub heading untuk membuat struktur yang jelas dan memudahkan pembaca memahami hierarki informasi.</p>\n\n';
+            break;
+            
+        case 'bullet-points':
+            template = '\n\n<ul>\n    <li><strong>Point 1:</strong> Deskripsi detail mengenai poin pertama yang perlu diperhatikan</li>\n    <li><strong>Point 2:</strong> Penjelasan komprehensif tentang aspek kedua dari topik</li>\n    <li><strong>Point 3:</strong> Informasi tambahan yang mendukung pemahaman pembaca</li>\n</ul>\n\n';
+            break;
+            
+        case 'step-by-step':
+            template = '\n\n<h2>Langkah-langkah</h2>\n<ol>\n    <li><strong>Langkah Pertama:</strong> Penjelasan detail mengenai langkah awal yang harus dilakukan</li>\n    <li><strong>Langkah Kedua:</strong> Instruksi lanjutan dengan penjelasan yang mudah diikuti</li>\n    <li><strong>Langkah Ketiga:</strong> Finalisasi proses dengan tips untuk hasil optimal</li>\n</ol>\n\n';
+            break;
+            
+        case 'callout-info':
+            template = '\n\n<div class="callout info"><strong>💡 Tips Penting:</strong> Gunakan callout box seperti ini untuk memberikan informasi tambahan atau tips yang berguna bagi pembaca.</div>\n\n';
+            break;
+            
+        case 'callout-warning':
+            template = '\n\n<div class="callout warning"><strong>⚠️ Perhatian:</strong> Bagian ini berisi informasi penting yang perlu diperhatikan sebelum melanjutkan.</div>\n\n';
+            break;
+            
+        case 'code-example':
+            template = '\n\n<pre><code>// Contoh implementasi kode\nfunction exampleFunction() {\n    const result = "Ini adalah contoh kode yang dapat disesuaikan";\n    return result;\n}</code></pre>\n<p><em>Penjelasan mengenai kode di atas dan bagaimana cara menggunakannya dalam konteks artikel.</em></p>\n\n';
+            break;
+            
+        case 'quote':
+            template = '\n\n<blockquote>\n    <p>"Quote atau kutipan menarik yang mendukung pembahasan dalam artikel ini dan memberikan perspektif yang berbeda."</p>\n    <footer>— Sumber Kutipan atau Expert</footer>\n</blockquote>\n\n';
+            break;
+            
+        default:
+            template = '\n\n<p>Template "' + type + '" tidak ditemukan. Silakan pilih template yang tersedia.</p>\n\n';
+            console.warn('⚠️ Unknown template type:', type);
+    }
+    
+    if (template) {
+        try {
+            const cursorPos = textarea.selectionStart || 0;
+            const textBefore = textarea.value.substring(0, cursorPos);
+            const textAfter = textarea.value.substring(cursorPos);
+            
+            textarea.value = textBefore + template + textAfter;
+            textarea.focus();
+            
+            // Set cursor position after inserted template
+            const newCursorPos = cursorPos + template.length;
+            textarea.setSelectionRange(newCursorPos, newCursorPos);
+            
+            // Show success indicator
+            showAutoSaveIndicator('Template ditambahkan (fallback mode)');
+            console.log('✅ Template inserted successfully via fallback');
+            
+        } catch (error) {
+            console.error('❌ Error inserting template in fallback mode:', error);
+            alert('Error inserting template: ' + error.message);
+        }
+    } else {
+        console.error('❌ No template generated for type:', type);
+        alert('No template available for: ' + type);
+    }
+}
+
+// Debug functions untuk testing template insertion
+function testTemplateInsertion() {
+    console.log('🧪 Testing template insertion...');
+    alert('Testing template insertion - check console for details');
+    insertTemplate('article-intro');
+}
+
+function debugEditorState() {
+    console.log('🔍 EDITOR DEBUG INFO:');
+    console.log('====================');
+    
+    // Check textarea
+    const textarea = document.getElementById('content');
+    console.log('📝 Textarea element:', textarea ? 'Found' : 'NOT FOUND');
+    if (textarea) {
+        console.log('   - ID:', textarea.id);
+        console.log('   - Value length:', textarea.value.length);
+        console.log('   - Cursor position:', textarea.selectionStart);
+    }
+    
+    // Check TinyMCE
+    console.log('🔧 TinyMCE check:');
+    console.log('   - tinymce defined:', typeof tinymce !== 'undefined');
+    
+    if (typeof tinymce !== 'undefined') {
+        console.log('   - tinymce.get("content"):', tinymce.get('content') ? 'Found' : 'NOT FOUND');
+        console.log('   - tinymce.editors.length:', tinymce.editors ? tinymce.editors.length : 'undefined');
+        
+        if (tinymce.editors && tinymce.editors.length > 0) {
+            tinymce.editors.forEach((editor, index) => {
+                console.log(`   - Editor ${index}:`, {
+                    id: editor.id,
+                    targetElm: editor.targetElm ? editor.targetElm.id : 'none',
+                    initialized: editor.initialized,
+                    destroyed: editor.destroyed
+                });
+            });
+        }
+        
+        const contentEditor = tinymce.get('content');
+        if (contentEditor) {
+            console.log('   - Content editor state:', {
+                initialized: contentEditor.initialized,
+                destroyed: contentEditor.destroyed,
+                removed: contentEditor.removed,
+                mode: contentEditor.mode ? contentEditor.mode.get() : 'unknown'
+            });
+        }
+    }
+    
+    // Check global editor
+    console.log('🌐 Global editor (window.tinymceEditor):', window.tinymceEditor ? 'Found' : 'NOT FOUND');
+    
+    // Check advanced config
+    console.log('⚙️ Advanced config (advancedEditorConfig):', typeof advancedEditorConfig !== 'undefined' ? 'Found' : 'NOT FOUND');
+    
+    // Check insertTemplate function
+    console.log('🎯 insertTemplate function:', typeof insertTemplate !== 'undefined' ? 'Found' : 'NOT FOUND');
+    
+    alert('Debug info logged to console - check F12 Developer Tools');
+}
+
+// Backup event listeners for template buttons (in case onclick fails)
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🔗 Setting up backup event listeners for template buttons...');
+    
+    // Wait a bit for page to fully load
+    setTimeout(function() {
+        setupTemplateButtons();
+    }, 1000); // Wait 1 second for everything to load
+});
+
+function setupTemplateButtons() {
+    console.log('⚙️ Setting up template buttons...');
+    
+    // Method 1: Backup event listeners for existing buttons
+    const buttons = document.querySelectorAll('.editor-toolbar button[onclick*="insertTemplate"]');
+    console.log('🔍 Found template buttons:', buttons.length);
+    
+    buttons.forEach(button => {
+        const onclickAttr = button.getAttribute('onclick');
+        if (onclickAttr) {
+            // Extract template type from onclick attribute
+            const match = onclickAttr.match(/insertTemplate\('([^']+)'\)/);
+            if (match) {
+                const templateType = match[1];
+                
+                // Remove existing onclick to prevent conflicts
+                button.removeAttribute('onclick');
+                
+                // Add click event listener as primary method
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    console.log('🖱️ Button clicked via event listener:', templateType);
+                    insertTemplate(templateType);
+                    return false;
+                });
+                
+                console.log('✅ Event listener added for:', templateType);
+            }
+        }
+    });
+    
+    // Method 2: Event delegation for all buttons (extra safety)
+    document.addEventListener('click', function(e) {
+        const button = e.target.closest('button[title*="Template"], button[title*="template"], button[title*="box"], button[title*="kutipan"], button[title*="Code"]');
+        if (button && button.closest('.editor-toolbar')) {
+            const title = button.getAttribute('title') || '';
+            const text = button.textContent.trim();
+            
+            let templateType = '';
+            
+            // Map based on button content and title
+            if (text.includes('Intro') || title.includes('pembuka')) templateType = 'article-intro';
+            else if (text.includes('Section') || title.includes('section')) templateType = 'heading-section';
+            else if (text.includes('Points') || title.includes('Bullet')) templateType = 'bullet-points';
+            else if (text.includes('Steps') || title.includes('langkah')) templateType = 'step-by-step';
+            else if (text.includes('Info Box') || title.includes('Info box')) templateType = 'callout-info';
+            else if (text.includes('Warning') || title.includes('Warning')) templateType = 'callout-warning';
+            else if (text.includes('Quote') || title.includes('kutipan')) templateType = 'quote';
+            else if (text.includes('Code') || title.includes('Code')) templateType = 'code-example';
+            
+            if (templateType) {
+                e.preventDefault();
+                console.log('🎯 Template button detected via delegation:', templateType);
+                insertTemplate(templateType);
+                return false;
+            }
+        }
+    });
+    
+    // Method 3: Setup debug buttons
+    const debugButtons = document.querySelectorAll('button[onclick*="testTemplateInsertion"], button[onclick*="debugEditorState"]');
+    debugButtons.forEach(button => {
+        const onclickAttr = button.getAttribute('onclick');
+        
+        // Remove onclick attribute
+        button.removeAttribute('onclick');
+        
+        if (onclickAttr && onclickAttr.includes('testTemplateInsertion')) {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log('🧪 Test button clicked via event listener');
+                testTemplateInsertion();
+                return false;
+            });
+        } else if (onclickAttr && onclickAttr.includes('debugEditorState')) {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log('🔍 Debug button clicked via event listener');
+                debugEditorState();
+                return false;
+            });
+        }
+    });
+    
+    console.log('✅ All template buttons setup completed');
+    
+    // Test that functions are available
+    console.log('🧪 Function availability check:');
+    console.log('   - insertTemplate:', typeof insertTemplate !== 'undefined' ? '✅' : '❌');
+    console.log('   - insertTinyMCETemplate:', typeof insertTinyMCETemplate !== 'undefined' ? '✅' : '❌');
+    console.log('   - insertPlainTemplate:', typeof insertPlainTemplate !== 'undefined' ? '✅' : '❌');
+    
+    // Show ready indicator
+    const toolbar = document.querySelector('.editor-toolbar');
+    if (toolbar) {
+        const readyIndicator = document.createElement('div');
+        readyIndicator.className = 'template-buttons-ready';
+        readyIndicator.innerHTML = '<small class="text-success"><i class="fas fa-check"></i> Template buttons ready!</small>';
+        readyIndicator.style.cssText = 'text-align: center; padding: 0.25rem; background: #d4edda; border: 1px solid #c3e6cb; border-radius: 4px; margin-top: 0.5rem;';
+        toolbar.appendChild(readyIndicator);
+        
+        setTimeout(() => {
+            if (readyIndicator.parentNode) {
+                readyIndicator.remove();
+            }
+        }, 3000);
+    }    
+    // Check if advanced editor config is available
+    if (typeof advancedEditorConfig === 'undefined') {
+        console.error('❌ Advanced editor config not found!');
+        console.log('⚠️ Buttons will work in fallback mode');
+        if (toolbar) {
+            const loadingIndicator = toolbar.querySelector('.editor-loading');
+            if (loadingIndicator) loadingIndicator.remove();
+        }
+        // Don't return - let buttons work in fallback mode
+        return;
+    }
+    
+    try {
+        // Initialize TinyMCE with advanced configuration
+        console.log('✅ Advanced editor config found, initializing TinyMCE...');
+        
+        // Add setup callback to enable toolbar when ready
+        const configWithSetup = {
+            ...advancedEditorConfig,
+            setup: function(editor) {
+                console.log('🔧 TinyMCE setup callback triggered');
+                
+                editor.on('init', function() {
+                    console.log('✅ TinyMCE initialized successfully');
+                    
+                    // Remove loading indicator
+                    if (toolbar) {
+                        const loadingIndicator = toolbar.querySelector('.editor-loading');
+                        if (loadingIndicator) {
+                            loadingIndicator.remove();
+                        }
+                        
+                        // Add success indicator
+                        const successIndicator = document.createElement('div');
+                        successIndicator.className = 'editor-ready';
+                        successIndicator.innerHTML = '<small class="text-success"><i class="fas fa-check"></i> Editor ready - TinyMCE mode active!</small>';
+                        toolbar.appendChild(successIndicator);
+                        
+                        setTimeout(() => {
+                            if (successIndicator.parentNode) {
+                                successIndicator.remove();
+                            }
+                        }, 3000);
+                    }
+                    
+                    // Make editor globally accessible
+                    window.tinymceEditor = editor;
+                    console.log('✅ Editor set to window.tinymceEditor');
+                });
+                
+                editor.on('LoadContent', function() {
+                    console.log('✅ TinyMCE content loaded');
+                });
+                
+                editor.on('Change', function() {
+                    console.log('📝 TinyMCE content changed');
+                });
+            }
+        };
+        
+        tinymce.init(configWithSetup).then(function(editors) {
+            console.log('✅ TinyMCE init promise resolved, editors:', editors.length);
+        }).catch(function(error) {
+            console.error('❌ TinyMCE init promise rejected:', error);
+        });
+        
+    } catch (error) {
+        console.error('❌ Error initializing TinyMCE:', error);
+        // Remove loading indicator on error
+        if (toolbar) {
+            const loadingIndicator = toolbar.querySelector('.editor-loading');
+            if (loadingIndicator) loadingIndicator.remove();
+            
+            // Add error indicator
+            const errorIndicator = document.createElement('div');
+            errorIndicator.className = 'editor-error';
+            errorIndicator.innerHTML = '<small class="text-warning"><i class="fas fa-exclamation-triangle"></i> TinyMCE failed - using fallback mode</small>';
+            toolbar.appendChild(errorIndicator);
+        }
+    }
+    
+    // Show draft recovery if available
+    const draftContent = localStorage.getItem('article_draft_' + '{{ $article->id }}');
+    if (draftContent && draftContent.trim() !== '') {
+        showDraftRecovery(draftContent);
+    }
+});
+
+// Fallback basic TinyMCE initialization
+function initBasicTinyMCE() {
+    console.log('🔄 Initializing basic TinyMCE as fallback...');
+    tinymce.init({
+        selector: '#content',
+        height: 500,
+        menubar: true,
+        plugins: 'advlist autolink lists link image charmap print preview anchor searchreplace visualblocks code fullscreen insertdatetime media table paste code help wordcount',
+        toolbar: 'undo redo | formatselect | bold italic backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help',
+        setup: function (editor) {
+            editor.on('init', function () {
+                console.log('✅ Basic TinyMCE initialized');
+            });
+        }
+    });
+}
+
+// Draft recovery functionality
+function showDraftRecovery(draftContent) {
+    const contentTextarea = document.getElementById('content');
+    const currentContent = contentTextarea.value.trim();
+    
+    if (draftContent !== currentContent) {
+        const recoveryDiv = document.createElement('div');
+        recoveryDiv.className = 'draft-recovery';
+        recoveryDiv.innerHTML = `
+            <div>
+                <strong>📝 Draft Ditemukan:</strong> Ada draft yang tersimpan sebelumnya. Apakah Anda ingin memulihannya?
+            </div>
+            <div class="actions">
+                <button class="btn btn-primary" onclick="recoverDraft('${draftContent.replace(/'/g, "\\'")}')">Pulihkan</button>
+                <button class="btn btn-secondary" onclick="dismissDraft()">Abaikan</button>
+            </div>
+        `;
+        
+        contentTextarea.parentNode.insertBefore(recoveryDiv, contentTextarea);
+    }
+}
+
+function recoverDraft(content) {
+    const editor = tinymce.get('content');
+    if (editor) {
+        editor.setContent(content);
+    } else {
+        document.getElementById('content').value = content;
+    }
+    dismissDraft();
+    showAutoSaveIndicator('Draft dipulihkan');
+}
+
+function dismissDraft() {
+    const recoveryDiv = document.querySelector('.draft-recovery');
+    if (recoveryDiv) {
+        recoveryDiv.remove();
+    }
+    localStorage.removeItem('article_draft_' + '{{ $article->id }}');
+}
+
+// Auto-save indicator
+function showAutoSaveIndicator(message = 'Tersimpan otomatis') {
+    let indicator = document.querySelector('.autosave-indicator');
+    if (!indicator) {
+        indicator = document.createElement('div');
+        indicator.className = 'autosave-indicator';
+        document.body.appendChild(indicator);
+    }
+    
+    indicator.textContent = message;
+    indicator.classList.add('show');
+    
+    setTimeout(() => {
+        indicator.classList.remove('show');
+    }, 2000);
+}
+
+// Enhanced Template insertion functions untuk toolbar buttons dengan format HTML profesional
+function insertTemplate(type) {
+    console.log('🎯 insertTemplate called with type:', type);
+    
+    // Try multiple ways to get TinyMCE editor
+    let editor = null;
+    let editorMethod = 'fallback';
+    
+    // Method 1: Direct access
+    if (typeof tinymce !== 'undefined') {
+        editor = tinymce.get('content');
+        if (editor) {
+            editorMethod = 'tinymce.get';
+            console.log('✅ Editor found via tinymce.get()');
+        }
+    }
+    
+    // Method 2: Global editor reference
+    if (!editor && window.tinymceEditor) {
+        editor = window.tinymceEditor;
+        editorMethod = 'global';
+        console.log('✅ Editor found via window.tinymceEditor');
+    }
+    
+    // Method 3: Try to find by selector
+    if (!editor && typeof tinymce !== 'undefined' && tinymce.editors) {
+        editor = tinymce.editors.find(e => e.targetElm && e.targetElm.id === 'content');
+        if (editor) {
+            editorMethod = 'editors.find';
+            console.log('✅ Editor found via tinymce.editors.find()');
+        }
+    }
+    
+    // Check if editor is properly initialized
+    if (editor) {
+        console.log('🔍 Editor state check:', {
+            initialized: editor.initialized,
+            destroyed: editor.destroyed,
+            removed: editor.removed,
+            targetElm: editor.targetElm ? editor.targetElm.id : 'none'
+        });
+        
+        if (editor.initialized !== false && !editor.destroyed && !editor.removed) {
+            console.log(`✅ Using TinyMCE editor (${editorMethod})`);
+            insertTinyMCETemplate(editor, type);
+            return;
+        } else {
+            console.log('⚠️ TinyMCE editor not ready, using fallback');
+        }
+    } else {
+        console.log('⚠️ No TinyMCE editor found, using fallback');
+    }
+    
+    // Fallback to plain textarea
+    console.log('📝 Using fallback textarea insertion');
+    insertPlainTemplate(type);
+}
+
+// Insert template into TinyMCE editor
+function insertTinyMCETemplate(editor, type) {
+    let template = '';
+    
+    switch(type) {
+        case 'article-intro':
+            template = `
+                <div class="article-content">
+                    <p class="intro"><strong>Paragraf pembuka dengan emphasis yang menarik perhatian pembaca.</strong> Jelaskan secara singkat apa yang akan dibahas dalam artikel ini dan mengapa hal tersebut penting untuk pembaca.</p>
+                </div>
+            `;
+            break;
+            
+        case 'heading-section':
+            template = `
+                <h2>Judul Bagian Utama</h2>
+                <p>Konten dengan <strong>bold text</strong> dan <em>italic text</em> untuk memberikan penekanan pada poin-poin penting. Pastikan setiap paragraf memiliki gagasan utama yang jelas dan mudah dipahami.</p>
+                
+                <h3>Sub Bagian Penting</h3>
+                <p>Pembahasan lebih detail mengenai topik tertentu. Gunakan sub heading untuk membuat struktur yang jelas dan memudahkan pembaca memahami hierarki informasi.</p>
+            `;
+            break;
+            
+        case 'bullet-points':
+            template = `
+                <ul>
+                    <li><strong>Point 1:</strong> Deskripsi detail mengenai poin pertama yang perlu diperhatikan</li>
+                    <li><strong>Point 2:</strong> Penjelasan komprehensif tentang aspek kedua dari topik</li>
+                    <li><strong>Point 3:</strong> Informasi tambahan yang mendukung pemahaman pembaca</li>
+                </ul>
+            `;
+            break;
+            
+        case 'callout-info':
+            template = '<div class="callout info"><strong>💡 Tips Penting:</strong> Gunakan callout box seperti ini untuk memberikan informasi tambahan atau tips yang berguna bagi pembaca.</div>';
+            break;
+            
+        case 'callout-warning':
+            template = '<div class="callout warning"><strong>⚠️ Perhatian:</strong> Bagian ini berisi informasi penting yang perlu diperhatikan sebelum melanjutkan.</div>';
+            break;
+              case 'code-example':
+            template = `
+                <pre><code>// Contoh implementasi kode
+function exampleFunction() {
+    const result = "Ini adalah contoh kode yang dapat disesuaikan";
+    return result;
+}</code></pre>
+                <p><em>Penjelasan mengenai kode di atas dan bagaimana cara menggunakannya dalam konteks artikel.</em></p>
+            `;
+            break;
+            
+        case 'step-by-step':
+            template = `
+                <h2>Langkah-langkah</h2>
+                <ol>
+                    <li><strong>Langkah Pertama:</strong> Penjelasan detail mengenai langkah awal yang harus dilakukan</li>
+                    <li><strong>Langkah Kedua:</strong> Instruksi lanjutan dengan penjelasan yang mudah diikuti</li>
+                    <li><strong>Langkah Ketiga:</strong> Finalisasi proses dengan tips untuk hasil optimal</li>
+                </ol>
+            `;
+            break;
+            
+        case 'quote':
+            template = `
+                <blockquote>
+                    <p>"Quote atau kutipan menarik yang mendukung pembahasan dalam artikel ini dan memberikan perspektif yang berbeda."</p>
+                    <footer>— Sumber Kutipan atau Expert</footer>
+                </blockquote>
+            `;            break;
+            
+        default:
+            template = '<p>Template tidak ditemukan. Silakan pilih template yang tersedia.</p>';
+    }
+    
+    if (template) {
+        try {
+            // Insert content at cursor position
+            editor.insertContent(template);
+            
+            // Focus back to editor
+            editor.focus();
+            
+            // Show success indicator
+            showAutoSaveIndicator('Template ditambahkan');
+            console.log('✅ Template inserted successfully');
+            
+            // Trigger change event to enable auto-save
+            if (editor.fire) {
+                editor.fire('change');
+            }
+            
+        } catch (error) {
+            console.error('❌ Error inserting template:', error);
+            // Fallback to plain text insertion
+            insertPlainTemplate(type);
+        }
+    }
+}
+
+// Fallback for plain textarea dengan format HTML - Enhanced dengan debugging
+function insertPlainTemplate(type) {
+    console.log('📝 insertPlainTemplate called with type:', type);
+    
+    const textarea = document.getElementById('content');
+    if (!textarea) {
+        console.error('❌ Content textarea not found!');
+        alert('Error: Content textarea not found!');
+        return;
+    }
+    
+    console.log('✅ Content textarea found');
+    
+    let template = '';
+    
+    switch(type) {
+        case 'article-intro':
+            template = '\n\n<div class="article-content">\n    <p class="intro"><strong>Paragraf pembuka dengan emphasis yang menarik perhatian pembaca.</strong> Jelaskan secara singkat apa yang akan dibahas dalam artikel ini dan mengapa hal tersebut penting untuk pembaca.</p>\n</div>\n\n';
+            break;
+            
+        case 'heading-section':
+            template = '\n\n<h2>Judul Bagian Utama</h2>\n<p>Konten dengan <strong>bold text</strong> dan <em>italic text</em> untuk memberikan penekanan pada poin-poin penting. Pastikan setiap paragraf memiliki gagasan utama yang jelas dan mudah dipahami.</p>\n\n<h3>Sub Bagian Penting</h3>\n<p>Pembahasan lebih detail mengenai topik tertentu. Gunakan sub heading untuk membuat struktur yang jelas dan memudahkan pembaca memahami hierarki informasi.</p>\n\n';
+            break;
+            
+        case 'bullet-points':
+            template = '\n\n<ul>\n    <li><strong>Point 1:</strong> Deskripsi detail mengenai poin pertama yang perlu diperhatikan</li>\n    <li><strong>Point 2:</strong> Penjelasan komprehensif tentang aspek kedua dari topik</li>\n    <li><strong>Point 3:</strong> Informasi tambahan yang mendukung pemahaman pembaca</li>\n</ul>\n\n';
+            break;
+            
+        case 'step-by-step':
+            template = '\n\n<h2>Langkah-langkah</h2>\n<ol>\n    <li><strong>Langkah Pertama:</strong> Penjelasan detail mengenai langkah awal yang harus dilakukan</li>\n    <li><strong>Langkah Kedua:</strong> Instruksi lanjutan dengan penjelasan yang mudah diikuti</li>\n    <li><strong>Langkah Ketiga:</strong> Finalisasi proses dengan tips untuk hasil optimal</li>\n</ol>\n\n';
+            break;
+            
+        case 'callout-info':
+            template = '\n\n<div class="callout info"><strong>💡 Tips Penting:</strong> Gunakan callout box seperti ini untuk memberikan informasi tambahan atau tips yang berguna bagi pembaca.</div>\n\n';
+            break;
+            
+        case 'callout-warning':
+            template = '\n\n<div class="callout warning"><strong>⚠️ Perhatian:</strong> Bagian ini berisi informasi penting yang perlu diperhatikan sebelum melanjutkan.</div>\n\n';
+            break;
+            
+        case 'code-example':
+            template = '\n\n<pre><code>// Contoh implementasi kode\nfunction exampleFunction() {\n    const result = "Ini adalah contoh kode yang dapat disesuaikan";\n    return result;\n}</code></pre>\n<p><em>Penjelasan mengenai kode di atas dan bagaimana cara menggunakannya dalam konteks artikel.</em></p>\n\n';
+            break;
+            
+        case 'quote':
+            template = '\n\n<blockquote>\n    <p>"Quote atau kutipan menarik yang mendukung pembahasan dalam artikel ini dan memberikan perspektif yang berbeda."</p>\n    <footer>— Sumber Kutipan atau Expert</footer>\n</blockquote>\n\n';
+            break;
+            
+        default:
+            template = '\n\n<p>Template "' + type + '" tidak ditemukan. Silakan pilih template yang tersedia.</p>\n\n';
+            console.warn('⚠️ Unknown template type:', type);
+    }
+    
+    if (template) {
+        try {
+            const cursorPos = textarea.selectionStart || 0;
+            const textBefore = textarea.value.substring(0, cursorPos);
+            const textAfter = textarea.value.substring(cursorPos);
+            
+            textarea.value = textBefore + template + textAfter;
+            textarea.focus();
+            
+            // Set cursor position after inserted template
+            const newCursorPos = cursorPos + template.length;
+            textarea.setSelectionRange(newCursorPos, newCursorPos);
+            
+            // Show success indicator
+            showAutoSaveIndicator('Template ditambahkan (fallback mode)');
+            console.log('✅ Template inserted successfully via fallback');
+            
+        } catch (error) {
+            console.error('❌ Error inserting template in fallback mode:', error);
+            alert('Error inserting template: ' + error.message);
+        }
+    } else {
+        console.error('❌ No template generated for type:', type);
+        alert('No template available for: ' + type);
+    }
+}
+
+// Debug functions untuk testing template insertion
+function testTemplateInsertion() {
+    console.log('🧪 Testing template insertion...');
+    alert('Testing template insertion - check console for details');
+    insertTemplate('article-intro');
+}
+
+function debugEditorState() {
+    console.log('🔍 EDITOR DEBUG INFO:');
+    console.log('====================');
+    
+    // Check textarea
+    const textarea = document.getElementById('content');
+    console.log('📝 Textarea element:', textarea ? 'Found' : 'NOT FOUND');
+    if (textarea) {
+        console.log('   - ID:', textarea.id);
+        console.log('   - Value length:', textarea.value.length);
+        console.log('   - Cursor position:', textarea.selectionStart);
+    }
+    
+    // Check TinyMCE
+    console.log('🔧 TinyMCE check:');
+    console.log('   - tinymce defined:', typeof tinymce !== 'undefined');
+    
+    if (typeof tinymce !== 'undefined') {
+        console.log('   - tinymce.get("content"):', tinymce.get('content') ? 'Found' : 'NOT FOUND');
+        console.log('   - tinymce.editors.length:', tinymce.editors ? tinymce.editors.length : 'undefined');
+        
+        if (tinymce.editors && tinymce.editors.length > 0) {
+            tinymce.editors.forEach((editor, index) => {
+                console.log(`   - Editor ${index}:`, {
+                    id: editor.id,
+                    targetElm: editor.targetElm ? editor.targetElm.id : 'none',
+                    initialized: editor.initialized,
+                    destroyed: editor.destroyed
+                });
+            });
+        }
+        
+        const contentEditor = tinymce.get('content');
+        if (contentEditor) {
+            console.log('   - Content editor state:', {
+                initialized: contentEditor.initialized,
+                destroyed: contentEditor.destroyed,
+                removed: contentEditor.removed,
+                mode: contentEditor.mode ? contentEditor.mode.get() : 'unknown'
+            });
+        }
+    }
+    
+    // Check global editor
+    console.log('🌐 Global editor (window.tinymceEditor):', window.tinymceEditor ? 'Found' : 'NOT FOUND');
+    
+    // Check advanced config
+    console.log('⚙️ Advanced config (advancedEditorConfig):', typeof advancedEditorConfig !== 'undefined' ? 'Found' : 'NOT FOUND');
+    
+    // Check insertTemplate function
+    console.log('🎯 insertTemplate function:', typeof insertTemplate !== 'undefined' ? 'Found' : 'NOT FOUND');
+    
+    alert('Debug info logged to console - check F12 Developer Tools');
+}
+
+// Backup event listeners for template buttons (in case onclick fails)
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🔗 Setting up backup event listeners for template buttons...');
+    
+    // Wait a bit for page to fully load
+    setTimeout(function() {
+        setupTemplateButtons();
+    }, 1000); // Wait 1 second for everything to load
+});
+
+function setupTemplateButtons() {
+    console.log('⚙️ Setting up template buttons...');
+    
+    // Method 1: Backup event listeners for existing buttons
+    const buttons = document.querySelectorAll('.editor-toolbar button[onclick*="insertTemplate"]');
+    console.log('🔍 Found template buttons:', buttons.length);
+    
+    buttons.forEach(button => {
+        const onclickAttr = button.getAttribute('onclick');
+        if (onclickAttr) {
+            // Extract template type from onclick attribute
+            const match = onclickAttr.match(/insertTemplate\('([^']+)'\)/);
+            if (match) {
+                const templateType = match[1];
+                
+                // Remove existing onclick to prevent conflicts
+                button.removeAttribute('onclick');
+                
+                // Add click event listener as primary method
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    console.log('🖱️ Button clicked via event listener:', templateType);
+                    insertTemplate(templateType);
+                    return false;
+                });
+                
+                console.log('✅ Event listener added for:', templateType);
+            }
+        }
+    });
+    
+    // Method 2: Event delegation for all buttons (extra safety)
+    document.addEventListener('click', function(e) {
+        const button = e.target.closest('button[title*="Template"], button[title*="template"], button[title*="box"], button[title*="kutipan"], button[title*="Code"]');
+        if (button && button.closest('.editor-toolbar')) {
+            const title = button.getAttribute('title') || '';
+            const text = button.textContent.trim();
+            
+            let templateType = '';
+            
+            // Map based on button content and title
+            if (text.includes('Intro') || title.includes('pembuka')) templateType = 'article-intro';
+            else if (text.includes('Section') || title.includes('section')) templateType = 'heading-section';
+            else if (text.includes('Points') || title.includes('Bullet')) templateType = 'bullet-points';
+            else if (text.includes('Steps') || title.includes('langkah')) templateType = 'step-by-step';
+            else if (text.includes('Info Box') || title.includes('Info box')) templateType = 'callout-info';
+            else if (text.includes('Warning') || title.includes('Warning')) templateType = 'callout-warning';
+            else if (text.includes('Quote') || title.includes('kutipan')) templateType = 'quote';
+            else if (text.includes('Code') || title.includes('Code')) templateType = 'code-example';
+            
+            if (templateType) {
+                e.preventDefault();
+                console.log('🎯 Template button detected via delegation:', templateType);
+                insertTemplate(templateType);
+                return false;
+            }
+        }
+    });
+    
+    // Method 3: Setup debug buttons
+    const debugButtons = document.querySelectorAll('button[onclick*="testTemplateInsertion"], button[onclick*="debugEditorState"]');
+    debugButtons.forEach(button => {
+        const onclickAttr = button.getAttribute('onclick');
+        
+        // Remove onclick attribute
+        button.removeAttribute('onclick');
+        
+        if (onclickAttr && onclickAttr.includes('testTemplateInsertion')) {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log('🧪 Test button clicked via event listener');
+                testTemplateInsertion();
+                return false;
+            });
+        } else if (onclickAttr && onclickAttr.includes('debugEditorState')) {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log('🔍 Debug button clicked via event listener');
+                debugEditorState();
+                return false;
+            });
+        }
+    });
+    
+    console.log('✅ All template buttons setup completed');
+    
+    // Test that functions are available
+    console.log('🧪 Function availability check:');
+    console.log('   - insertTemplate:', typeof insertTemplate !== 'undefined' ? '✅' : '❌');
+    console.log('   - insertTinyMCETemplate:', typeof insertTinyMCETemplate !== 'undefined' ? '✅' : '❌');
+    console.log('   - insertPlainTemplate:', typeof insertPlainTemplate !== 'undefined' ? '✅' : '❌');
+    
+    // Show ready indicator
+    const toolbar = document.querySelector('.editor-toolbar');
+    if (toolbar) {
+        const readyIndicator = document.createElement('div');
+        readyIndicator.className = 'template-buttons-ready';
+        readyIndicator.innerHTML = '<small class="text-success"><i class="fas fa-check"></i> Template buttons ready!</small>';
+        readyIndicator.style.cssText = 'text-align: center; padding: 0.25rem; background: #d4edda; border: 1px solid #c3e6cb; border-radius: 4px; margin-top: 0.5rem;';
+        toolbar.appendChild(readyIndicator);
+        
+        setTimeout(() => {
+            if (readyIndicator.parentNode) {
+                readyIndicator.remove();
+            }
+        }, 3000);
+    }
+}
+</script>
+@endpush
+@endsection

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple TinyMCE Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 20px auto; padding: 20px; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 4px; }
+        .success { background-color: #d1eddf; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .info { background-color: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <h1>Simple TinyMCE Local Test</h1>
+    
+    <div id="status" class="status info">Loading TinyMCE...</div>
+    
+    <button onclick="testInsert()" style="margin: 10px 5px 10px 0; padding: 8px 12px;">Test Insert Content</button>
+    <button onclick="getContent()" style="margin: 10px 5px; padding: 8px 12px;">Get Content</button>
+    <button onclick="clearContent()" style="margin: 10px 5px; padding: 8px 12px;">Clear Content</button>
+    
+    <textarea id="mytextarea" style="width: 100%;" rows="10">
+        <p>This is initial content...</p>
+    </textarea>
+
+    <!-- TinyMCE Local -->
+    <script src="/js/tinymce/tinymce.min.js"></script>
+    
+    <script>
+        console.log('🚀 Simple TinyMCE Test Started');
+        
+        tinymce.init({
+            selector: '#mytextarea',
+            height: 300,
+            menubar: false,
+            promotion: false,
+            branding: false,
+            license_key: 'gpl',
+            plugins: 'lists link code',
+            toolbar: 'undo redo | bold italic | alignleft aligncenter alignright | bullist numlist | link | code',
+            setup: function(editor) {
+                editor.on('init', function() {
+                    console.log('✅ TinyMCE initialized successfully!');
+                    document.getElementById('status').className = 'status success';
+                    document.getElementById('status').innerHTML = '✅ TinyMCE loaded successfully! No API key required.';
+                    window.myEditor = editor;
+                });
+                
+                editor.on('change', function() {
+                    console.log('📝 Content changed');
+                });
+            }
+        }).catch(function(error) {
+            console.error('❌ TinyMCE failed:', error);
+            document.getElementById('status').className = 'status error';
+            document.getElementById('status').innerHTML = '❌ Error: ' + error.message;
+        });
+        
+        function testInsert() {
+            const editor = window.myEditor || tinymce.get('mytextarea');
+            if (editor) {
+                editor.insertContent('<p><strong>Test content inserted!</strong> This proves TinyMCE is working perfectly.</p>');
+                console.log('✅ Test content inserted');
+            } else {
+                alert('Editor not ready!');
+            }
+        }
+        
+        function getContent() {
+            const editor = window.myEditor || tinymce.get('mytextarea');
+            if (editor) {
+                const content = editor.getContent();
+                console.log('📄 Current content:', content);
+                alert('Content length: ' + content.length + ' characters. Check console for full content.');
+            } else {
+                alert('Editor not ready!');
+            }
+        }
+        
+        function clearContent() {
+            const editor = window.myEditor || tinymce.get('mytextarea');
+            if (editor) {
+                editor.setContent('');
+                console.log('🗑️ Content cleared');
+            } else {
+                alert('Editor not ready!');
+            }
+        }
+    </script>
+</body>
+</html>

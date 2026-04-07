@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Template Button Test</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .test-section {
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .console-output {
+            background: #1e1e1e;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+        .editor-toolbar {
+            border: 1px solid #dee2e6;
+            border-bottom: none;
+            border-radius: 0.375rem 0.375rem 0 0;
+            padding: 0.5rem;
+            background-color: #f8f9fa;
+        }
+        .editor-toolbar + textarea {
+            border-radius: 0 0 0.375rem 0.375rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container my-5">
+        <h1>Template Button Functionality Test</h1>
+        <p class="text-muted">Test template insertion buttons with detailed logging</p>
+
+        <!-- Template Buttons Test Section -->
+        <div class="test-section">
+            <h3>Template Buttons</h3>
+            <p>Click buttons below to test template insertion functionality:</p>
+            
+            <div class="editor-toolbar mb-2">
+                <div class="btn-group-vertical btn-group-sm w-100" role="group">
+                    <div class="btn-group btn-group-sm mb-2" role="group">
+                        <button type="button" class="btn btn-outline-primary" onclick="insertTemplate('article-intro')" title="Template pembuka artikel">
+                            <i class="fas fa-paragraph"></i> Intro Artikel
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" onclick="insertTemplate('heading-section')" title="Heading dan sub-section">
+                            <i class="fas fa-heading"></i> Section
+                        </button>
+                        <button type="button" class="btn btn-outline-success" onclick="insertTemplate('bullet-points')" title="Bullet points terstruktur">
+                            <i class="fas fa-list"></i> Points
+                        </button>
+                        <button type="button" class="btn btn-outline-dark" onclick="insertTemplate('step-by-step')" title="Langkah-langkah berurutan">
+                            <i class="fas fa-list-ol"></i> Steps
+                        </button>
+                    </div>
+                    <div class="btn-group btn-group-sm mb-2" role="group">
+                        <button type="button" class="btn btn-outline-info" onclick="insertTemplate('callout-info')" title="Info box dengan tips">
+                            <i class="fas fa-info-circle"></i> Info Box
+                        </button>
+                        <button type="button" class="btn btn-outline-warning" onclick="insertTemplate('callout-warning')" title="Warning box">
+                            <i class="fas fa-exclamation-triangle"></i> Warning
+                        </button>
+                        <button type="button" class="btn btn-outline-primary" onclick="insertTemplate('quote')" title="Quote atau kutipan">
+                            <i class="fas fa-quote-right"></i> Quote
+                        </button>
+                        <button type="button" class="btn btn-outline-dark" onclick="insertTemplate('code-example')" title="Code example dengan penjelasan">
+                            <i class="fas fa-code"></i> Code
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Debug buttons -->
+                <div class="mt-2" style="border-top: 1px dashed #dee2e6; padding-top: 0.5rem;">
+                    <button type="button" class="btn btn-sm btn-outline-secondary me-2" onclick="testTemplateInsertion()">
+                        <i class="fas fa-bug"></i> Test Template
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-info me-2" onclick="debugEditorState()">
+                        <i class="fas fa-info"></i> Debug Info
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="clearConsole()">
+                        <i class="fas fa-trash"></i> Clear Console
+                    </button>
+                    <small class="text-muted ms-2">Debug tools</small>
+                </div>
+            </div>
+            
+            <textarea class="form-control" id="content" name="content" rows="10" placeholder="Template content will appear here..."></textarea>
+        </div>
+
+        <!-- Console Output -->
+        <div class="test-section">
+            <h3>Console Output</h3>
+            <p>Real-time logging of template insertion process:</p>
+            <div id="consoleOutput" class="console-output">
+                <div style="color: #50fa7b;">✅ Console ready - click buttons above to test</div>
+            </div>
+        </div>
+
+        <!-- Test Results -->
+        <div class="test-section">
+            <h3>Test Results</h3>
+            <div id="testResults">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> Click template buttons above to run tests
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TinyMCE CDN -->
+    <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+
+    <script>
+        // Console logging functionality
+        let consoleDiv = document.getElementById('consoleOutput');
+        let originalConsoleLog = console.log;
+        let originalConsoleError = console.error;
+        let originalConsoleWarn = console.warn;
+        
+        function addToConsole(message, type = 'log') {
+            const timestamp = new Date().toLocaleTimeString();
+            const colors = {
+                log: '#f8f8f2',
+                error: '#ff5555',
+                warn: '#f1fa8c',
+                success: '#50fa7b'
+            };
+            
+            const color = colors[type] || colors.log;
+            const icon = type === 'error' ? '❌' : type === 'warn' ? '⚠️' : type === 'success' ? '✅' : '📝';
+            
+            consoleDiv.innerHTML += `<div style="color: ${color};">[${timestamp}] ${icon} ${message}</div>`;
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+        }
+        
+        // Override console methods
+        console.log = function(...args) {
+            addToConsole(args.join(' '), 'log');
+            originalConsoleLog.apply(console, args);
+        };
+        
+        console.error = function(...args) {
+            addToConsole(args.join(' '), 'error');
+            originalConsoleError.apply(console, args);
+        };
+        
+        console.warn = function(...args) {
+            addToConsole(args.join(' '), 'warn');
+            originalConsoleWarn.apply(console, args);
+        };
+        
+        function clearConsole() {
+            consoleDiv.innerHTML = '<div style="color: #50fa7b;">✅ Console cleared</div>';
+        }
+        
+        // Template insertion functionality (simplified for testing)
+        function insertTemplate(type) {
+            console.log('🎯 insertTemplate called with type:', type);
+            
+            let template = '';
+            let success = false;
+            
+            switch(type) {
+                case 'article-intro':
+                    template = '<div class="article-content">\n    <p class="intro"><strong>Paragraf pembuka dengan emphasis yang menarik perhatian pembaca.</strong> Jelaskan secara singkat apa yang akan dibahas dalam artikel ini.</p>\n</div>';
+                    success = true;
+                    break;
+                    
+                case 'heading-section':
+                    template = '<h2>Judul Bagian Utama</h2>\n<p>Konten dengan <strong>bold text</strong> dan <em>italic text</em> untuk memberikan penekanan pada poin-poin penting.</p>\n\n<h3>Sub Bagian Penting</h3>\n<p>Pembahasan lebih detail mengenai topik tertentu.</p>';
+                    success = true;
+                    break;
+                    
+                case 'bullet-points':
+                    template = '<ul>\n    <li><strong>Point 1:</strong> Deskripsi detail mengenai poin pertama yang perlu diperhatikan</li>\n    <li><strong>Point 2:</strong> Penjelasan komprehensif tentang aspek kedua dari topik</li>\n    <li><strong>Point 3:</strong> Informasi tambahan yang mendukung pemahaman pembaca</li>\n</ul>';
+                    success = true;
+                    break;
+                    
+                case 'step-by-step':
+                    template = '<h2>Langkah-langkah</h2>\n<ol>\n    <li><strong>Langkah Pertama:</strong> Penjelasan detail mengenai langkah awal yang harus dilakukan</li>\n    <li><strong>Langkah Kedua:</strong> Instruksi lanjutan dengan penjelasan yang mudah diikuti</li>\n    <li><strong>Langkah Ketiga:</strong> Finalisasi proses dengan tips untuk hasil optimal</li>\n</ol>';
+                    success = true;
+                    break;
+                    
+                case 'callout-info':
+                    template = '<div class="callout info"><strong>💡 Tips Penting:</strong> Gunakan callout box seperti ini untuk memberikan informasi tambahan atau tips yang berguna bagi pembaca.</div>';
+                    success = true;
+                    break;
+                    
+                case 'callout-warning':
+                    template = '<div class="callout warning"><strong>⚠️ Perhatian:</strong> Bagian ini berisi informasi penting yang perlu diperhatikan sebelum melanjutkan.</div>';
+                    success = true;
+                    break;
+                    
+                case 'code-example':
+                    template = '<pre><code>// Contoh implementasi kode\nfunction exampleFunction() {\n    const result = "Ini adalah contoh kode yang dapat disesuaikan";\n    return result;\n}</code></pre>\n<p><em>Penjelasan mengenai kode di atas dan bagaimana cara menggunakannya dalam konteks artikel.</em></p>';
+                    success = true;
+                    break;
+                    
+                case 'quote':
+                    template = '<blockquote>\n    <p>"Quote atau kutipan menarik yang mendukung pembahasan dalam artikel ini dan memberikan perspektif yang berbeda."</p>\n    <footer>— Sumber Kutipan atau Expert</footer>\n</blockquote>';
+                    success = true;
+                    break;
+                    
+                default:
+                    template = '<p>Template "' + type + '" tidak ditemukan. Silakan pilih template yang tersedia.</p>';
+                    console.warn('⚠️ Unknown template type:', type);
+            }
+            
+            if (template) {
+                try {
+                    // Insert into textarea
+                    const textarea = document.getElementById('content');
+                    if (textarea) {
+                        const cursorPos = textarea.selectionStart || 0;
+                        const textBefore = textarea.value.substring(0, cursorPos);
+                        const textAfter = textarea.value.substring(cursorPos);
+                        
+                        textarea.value = textBefore + '\n\n' + template + '\n\n' + textAfter;
+                        textarea.focus();
+                        
+                        // Set cursor position after inserted template
+                        const newCursorPos = cursorPos + template.length + 4;
+                        textarea.setSelectionRange(newCursorPos, newCursorPos);
+                        
+                        addToConsole(`✅ Template "${type}" inserted successfully`, 'success');
+                        updateTestResults(type, true, 'Template inserted into textarea');
+                        
+                    } else {
+                        console.error('❌ Content textarea not found!');
+                        updateTestResults(type, false, 'Textarea not found');
+                    }
+                    
+                } catch (error) {
+                    console.error('❌ Error inserting template:', error);
+                    updateTestResults(type, false, 'Error: ' + error.message);
+                }
+            }
+        }
+        
+        function testTemplateInsertion() {
+            console.log('🧪 Running template insertion test...');
+            insertTemplate('article-intro');
+        }
+        
+        function debugEditorState() {
+            console.log('🔍 EDITOR DEBUG INFO:');
+            console.log('====================');
+            
+            // Check textarea
+            const textarea = document.getElementById('content');
+            console.log('📝 Textarea element:', textarea ? 'Found' : 'NOT FOUND');
+            if (textarea) {
+                console.log('   - ID:', textarea.id);
+                console.log('   - Value length:', textarea.value.length);
+                console.log('   - Cursor position:', textarea.selectionStart);
+            }
+            
+            // Check TinyMCE
+            console.log('🔧 TinyMCE check:');
+            console.log('   - tinymce defined:', typeof tinymce !== 'undefined');
+            
+            if (typeof tinymce !== 'undefined') {
+                console.log('   - tinymce.get("content"):', tinymce.get('content') ? 'Found' : 'NOT FOUND');
+                console.log('   - tinymce.editors.length:', tinymce.editors ? tinymce.editors.length : 'undefined');
+            }
+            
+            // Check functions
+            console.log('🎯 Functions check:');
+            console.log('   - insertTemplate:', typeof insertTemplate !== 'undefined' ? 'Found' : 'NOT FOUND');
+            console.log('   - testTemplateInsertion:', typeof testTemplateInsertion !== 'undefined' ? 'Found' : 'NOT FOUND');
+            console.log('   - debugEditorState:', typeof debugEditorState !== 'undefined' ? 'Found' : 'NOT FOUND');
+        }
+        
+        function updateTestResults(templateType, success, message) {
+            const resultsDiv = document.getElementById('testResults');
+            const timestamp = new Date().toLocaleTimeString();
+            const statusClass = success ? 'alert-success' : 'alert-danger';
+            const icon = success ? 'fa-check-circle' : 'fa-times-circle';
+            
+            const resultHtml = `
+                <div class="alert ${statusClass}">
+                    <i class="fas ${icon}"></i> 
+                    <strong>[${timestamp}] ${templateType}:</strong> ${message}
+                </div>
+            `;
+            
+            if (resultsDiv.innerHTML.includes('Click template buttons')) {
+                resultsDiv.innerHTML = resultHtml;
+            } else {
+                resultsDiv.innerHTML += resultHtml;
+            }
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Template Button Test Page Loaded');
+            console.log('📝 Ready to test template insertion functionality');
+            
+            // Test that functions are available
+            const functions = ['insertTemplate', 'testTemplateInsertion', 'debugEditorState'];
+            functions.forEach(func => {
+                const available = typeof window[func] !== 'undefined';
+                console.log(`   - ${func}: ${available ? '✅' : '❌'}`);
+            });
+        });
+    </script>
+</body>
+</html>

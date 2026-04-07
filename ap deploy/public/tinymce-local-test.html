@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TinyMCE Local Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        .toolbar {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border: 1px solid #dee2e6;
+            border-radius: 0.375rem;
+            margin-bottom: 10px;
+        }
+        .btn {
+            background-color: #0d6efd;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            margin: 2px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .btn:hover {
+            background-color: #0b5ed7;
+        }
+    </style>
+</head>
+<body>
+    <h1>TinyMCE Local Test</h1>
+    
+    <div class="toolbar">
+        <button class="btn" onclick="insertTemplate('intro')">Intro</button>
+        <button class="btn" onclick="insertTemplate('section')">Section</button>
+        <button class="btn" onclick="insertTemplate('points')">Points</button>
+        <button class="btn" onclick="insertTemplate('steps')">Steps</button>
+        <button class="btn" onclick="debugEditor()">Debug</button>
+    </div>
+    
+    <textarea id="content" rows="10" style="width: 100%;" placeholder="Test content..."></textarea>
+    
+    <div id="status" style="margin-top: 10px; padding: 10px; background-color: #e9ecef; border-radius: 4px;">
+        Loading TinyMCE...
+    </div>
+
+    <!-- TinyMCE Local -->
+    <script src="/js/tinymce/tinymce.min.js"></script>
+    
+    <script>
+        console.log('🚀 Starting TinyMCE Local Test');
+        
+        // Initialize TinyMCE
+        tinymce.init({
+            selector: '#content',
+            height: 300,
+            menubar: false,
+            promotion: false,
+            branding: false,
+            plugins: 'lists link code',
+            toolbar: 'undo redo | bold italic | alignleft aligncenter alignright | bullist numlist | link | code',
+            content_style: `
+                body { 
+                    font-family: Arial, sans-serif;
+                    font-size: 14px; 
+                    line-height: 1.5; 
+                    margin: 10px;
+                }
+            `,
+            setup: function(editor) {
+                console.log('🔧 TinyMCE setup callback');
+                
+                editor.on('init', function() {
+                    console.log('✅ TinyMCE editor initialized successfully!');
+                    document.getElementById('status').innerHTML = '✅ TinyMCE loaded successfully! Editor is ready.';
+                    document.getElementById('status').style.backgroundColor = '#d1eddf';
+                    window.testEditor = editor;
+                });
+                
+                editor.on('change', function() {
+                    console.log('📝 Editor content changed');
+                });
+            }
+        }).then(function(editors) {
+            console.log('✅ TinyMCE promise resolved, editors created:', editors.length);
+        }).catch(function(error) {
+            console.error('❌ TinyMCE initialization failed:', error);
+            document.getElementById('status').innerHTML = '❌ Error loading TinyMCE: ' + error.message;
+            document.getElementById('status').style.backgroundColor = '#f8d7da';
+        });
+        
+        // Template functions
+        function insertTemplate(type) {
+            console.log('🎯 Insert template:', type);
+            
+            const editor = window.testEditor || tinymce.get('content');
+            if (!editor) {
+                alert('Editor not ready!');
+                return;
+            }
+            
+            let template = '';
+            switch(type) {
+                case 'intro':
+                    template = '<p><strong>Ini adalah paragraf pembuka artikel.</strong> Tuliskan penjelasan singkat tentang topik yang akan dibahas.</p>';
+                    break;
+                case 'section':
+                    template = '<h2>Judul Bagian</h2><p>Konten bagian ini. Anda dapat menambahkan teks dengan <strong>bold</strong> atau <em>italic</em>.</p>';
+                    break;
+                case 'points':
+                    template = '<ul><li>Poin pertama</li><li>Poin kedua</li><li>Poin ketiga</li></ul>';
+                    break;
+                case 'steps':
+                    template = '<ol><li>Langkah pertama</li><li>Langkah kedua</li><li>Langkah ketiga</li></ol>';
+                    break;
+            }
+            
+            editor.insertContent(template);
+            editor.focus();
+            console.log('✅ Template inserted:', type);
+        }
+        
+        function debugEditor() {
+            console.log('🔍 Debug editor info:');
+            console.log('TinyMCE version:', tinymce.majorVersion + '.' + tinymce.minorVersion);
+            console.log('Active editor:', tinymce.get('content'));
+            console.log('Window editor:', window.testEditor);
+            alert('Check console for debug info');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple User Test</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-4">
+        <h1>User Management Debug</h1>
+        
+        <div class="card">
+            <div class="card-body">
+                <h5>Debug Information</h5>
+                
+                <?php
+                try {
+                    // Test database connection
+                    $pdo = new PDO('sqlite:' . __DIR__ . '/database/database.sqlite');
+                    echo "<p class='text-success'>✅ Database connection successful</p>";
+                    
+                    // Test users table
+                    $stmt = $pdo->query("SELECT COUNT(*) as count FROM users");
+                    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+                    echo "<p>👥 Total users: " . $result['count'] . "</p>";
+                    
+                    // Get all users
+                    $stmt = $pdo->query("SELECT * FROM users ORDER BY created_at DESC");
+                    $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                    
+                    if (!empty($users)) {
+                        echo "<h6>User List:</h6>";
+                        echo "<div class='table-responsive'>";
+                        echo "<table class='table table-striped'>";
+                        echo "<thead><tr><th>ID</th><th>Name</th><th>Username</th><th>Email</th><th>Role</th><th>Active</th><th>Created</th></tr></thead>";
+                        echo "<tbody>";
+                        
+                        foreach ($users as $user) {
+                            $active = $user['is_active'] ? '<span class="badge bg-success">Yes</span>' : '<span class="badge bg-secondary">No</span>';
+                            $role = $user['role'] === 'admin' ? '<span class="badge bg-danger">Admin</span>' : '<span class="badge bg-info">Penulis</span>';
+                            
+                            echo "<tr>";
+                            echo "<td>" . htmlspecialchars($user['id']) . "</td>";
+                            echo "<td>" . htmlspecialchars($user['name']) . "</td>";
+                            echo "<td><code>" . htmlspecialchars($user['username']) . "</code></td>";
+                            echo "<td>" . htmlspecialchars($user['email']) . "</td>";
+                            echo "<td>" . $role . "</td>";
+                            echo "<td>" . $active . "</td>";
+                            echo "<td>" . date('Y-m-d H:i', strtotime($user['created_at'])) . "</td>";
+                            echo "</tr>";
+                        }
+                        
+                        echo "</tbody></table></div>";
+                    } else {
+                        echo "<p class='text-warning'>⚠️ No users found in database</p>";
+                    }
+                    
+                } catch (Exception $e) {
+                    echo "<p class='text-danger'>❌ Database error: " . htmlspecialchars($e->getMessage()) . "</p>";
+                }
+                ?>
+                
+                <hr>
+                
+                <h6>Test Links:</h6>
+                <div class="d-flex gap-2">
+                    <a href="/admin/login" class="btn btn-primary btn-sm">Admin Login</a>
+                    <a href="/admin/users" class="btn btn-secondary btn-sm">User Management</a>
+                    <a href="/test-users" class="btn btn-info btn-sm">Test Users</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
