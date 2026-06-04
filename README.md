@@ -1,8 +1,5 @@
-# LAMDAKU - Healthcare Accreditation Company Website
+# LAMDAKU - Accreditation Company Website
 
-## Project Overview
-
-LAMDAKU adalah website company profile untuk perusahaan akreditasi kesehatan yang menyediakan layanan akreditasi untuk klinik, laboratorium, dan pusat kesehatan masyarakat (puskesmas). Project ini terdiri dari frontend React dan backend Laravel dengan CMS.
 
 ## Project Structure
 
@@ -245,6 +242,3 @@ Untuk pertanyaan atau masalah, silakan hubungi tim development atau buat issue d
 
 This project is proprietary software developed for LAMDAKU.
 
----
-
-**LAMDAKU CMS** - Modern Healthcare Accreditation Management System
